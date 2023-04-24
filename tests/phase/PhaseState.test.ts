@@ -68,7 +68,7 @@ describe('PhaseState', () => {
     let newPosition: Position;
     let piece: Piece;
     let action: Action;
-    beforeAll(async () => {
+    beforeEach(async () => {
       // Piece id 1 starts at 0, 0
       // Move piece 1 to 0, 1
       oldPosition = Position.fromXY(0, 0);
@@ -89,7 +89,6 @@ describe('PhaseState', () => {
         action,
         action.sign(player1PrivateKey),
         piece,
-        emptyGameState,
         emptyMerkleMaps.pieces.getWitness(Field(1)), // witness game pieces map at piece 1 path
         emptyMerkleMaps.arena.getWitness(oldPosition.hash()), // witness arena map at old position path
         arenaMapBothUnoccupied.getWitness(newPosition.hash()), // winess new arena map at new position path
@@ -98,7 +97,8 @@ describe('PhaseState', () => {
 
       // actually apply the move to the merkle maps
       const pieceMapAfterMove = emptyMerkleMaps.pieces;
-      pieceMapAfterMove.set(Field(1), newPosition.hash());
+      piece.position = newPosition;
+      pieceMapAfterMove.set(Field(1), piece.hash());
 
       const arenaMapAfterMove = GameState.emptyMerkleMaps().arena;
       arenaMapAfterMove.set(oldPosition.hash(), Field(0));
@@ -113,6 +113,130 @@ describe('PhaseState', () => {
       expect(arenaMapAfterMove.getRoot().toString()).toBe(
         newPhaseState.currentArenaState.toString()
       );
+    });
+
+    it('tracks original state root after multiple updates', async () => {
+      // {pieces, arena} - the merkle maps as itialized by an empty game state
+      const emptyMerkleMaps = GameState.emptyMerkleMaps();
+
+      // arena merkle map with the old position vacated - used to verify the transition
+      const arenaMapBothUnoccupied = GameState.emptyMerkleMaps().arena;
+      arenaMapBothUnoccupied.set(oldPosition.hash(), Field(0));
+
+      // arena merkle map with the complete move applied
+      const arenaMapAfterMove = GameState.emptyMerkleMaps().arena;
+      arenaMapAfterMove.set(oldPosition.hash(), Field(0));
+      arenaMapAfterMove.set(newPosition.hash(), Field(1));
+
+      const newPhaseState = initialPhaseState.applyMoveAction(
+        action,
+        action.sign(player1PrivateKey),
+        piece,
+        emptyMerkleMaps.pieces.getWitness(Field(1)), // witness game pieces map at piece 1 path
+        emptyMerkleMaps.arena.getWitness(oldPosition.hash()), // witness arena map at old position path
+        arenaMapBothUnoccupied.getWitness(newPosition.hash()), // winess new arena map at new position path
+        newPosition
+      );
+
+      const pieceMapAfterMove = GameState.emptyMerkleMaps().pieces;
+      piece.position = newPosition;
+      pieceMapAfterMove.set(Field(1), piece.hash());
+
+      const newNewPosition = Position.fromXY(1, 1);
+      action = new Action(Field(2), Field(0), newNewPosition.hash(), Field(1));
+      const secondMoveArenaMap = GameState.emptyMerkleMaps().arena;
+      secondMoveArenaMap.set(oldPosition.hash(), Field(0));
+      secondMoveArenaMap.set(newPosition.hash(), Field(0));
+      secondMoveArenaMap.set(newNewPosition.hash(), Field(1));
+
+      const secondUpdatePhaseState = newPhaseState.applyMoveAction(
+        action,
+        action.sign(player1PrivateKey),
+        piece,
+        pieceMapAfterMove.getWitness(Field(1)),
+        arenaMapAfterMove.getWitness(newPosition.hash()),
+        secondMoveArenaMap.getWitness(newNewPosition.hash()),
+        newNewPosition
+      );
+
+      // the starting hashes are equal to the empty game
+      expect(secondUpdatePhaseState.startingPiecesState.toString()).toBe(
+        GameState.emptyMerkleMaps().pieces.getRoot()
+      );
+      expect(secondUpdatePhaseState.startingArenaState.toString()).toBe(
+        GameState.emptyMerkleMaps().arena.getRoot()
+      );
+
+      // the current hashes are equal to the phase after both moves
+      const pieceMapAfterSecondMove = emptyMerkleMaps.pieces;
+      piece.position = newNewPosition;
+      pieceMapAfterSecondMove.set(Field(1), piece.hash());
+
+      expect(secondUpdatePhaseState.currentPiecesState.toString()).toBe(
+        pieceMapAfterSecondMove.getRoot()
+      );
+      expect(secondUpdatePhaseState.currentArenaState.toString()).toBe(
+        secondMoveArenaMap.getRoot()
+      );
+    });
+
+    it('rejects a move with nonce too small', async () => {
+      action = new Action(
+        Field(0), // nonce should be >= 1 for the first move in a phase
+        Field(0),
+        newPosition.hash(),
+        Field(1)
+      );
+
+      // {pieces, arena} - the merkle maps as itialized by an empty game state
+      const emptyMerkleMaps = GameState.emptyMerkleMaps();
+
+      // arena merkle map with the old position vacated - used to verify the transition
+      const arenaMapBothUnoccupied = GameState.emptyMerkleMaps().arena;
+      arenaMapBothUnoccupied.set(oldPosition.hash(), Field(0));
+
+      expect(() => {
+        initialPhaseState.applyMoveAction(
+          action,
+          action.sign(player1PrivateKey),
+          piece,
+          emptyMerkleMaps.pieces.getWitness(Field(1)), // witness game pieces map at piece 1 path
+          emptyMerkleMaps.arena.getWitness(oldPosition.hash()), // witness arena map at old position path
+          arenaMapBothUnoccupied.getWitness(newPosition.hash()), // winess new arena map at new position path
+          newPosition
+        );
+      }).toThrow();
+    });
+
+    it('rejects a move to a location which is occupied', async () => {
+      // Using the position that the piece is already at for now since no 2 pieces start close enough
+      // TODO: Make better custom scenarios than a blank game
+
+      action = new Action(
+        Field(0), // nonce should be >= 1 for the first move in a phase
+        Field(0),
+        oldPosition.hash(),
+        Field(1)
+      );
+
+      // {pieces, arena} - the merkle maps as itialized by an empty game state
+      const emptyMerkleMaps = GameState.emptyMerkleMaps();
+
+      // arena merkle map with the old position vacated - used to verify the transition
+      const arenaMapBothUnoccupied = GameState.emptyMerkleMaps().arena;
+      arenaMapBothUnoccupied.set(oldPosition.hash(), Field(0));
+
+      expect(() => {
+        initialPhaseState.applyMoveAction(
+          action,
+          action.sign(player1PrivateKey),
+          piece,
+          emptyMerkleMaps.pieces.getWitness(Field(1)),
+          emptyMerkleMaps.arena.getWitness(oldPosition.hash()),
+          arenaMapBothUnoccupied.getWitness(oldPosition.hash()),
+          oldPosition
+        );
+      }).toThrow();
     });
   });
 });

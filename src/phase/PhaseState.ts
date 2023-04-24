@@ -56,7 +56,6 @@ export class PhaseState extends Struct({
     action: Action,
     actionSignature: Signature,
     piece: Piece,
-    gameState: GameState,
     pieceWitness: MerkleMapWitness,
     oldPositionArenaWitness: MerkleMapWitness,
     newPositionArenaWitness: MerkleMapWitness,
@@ -69,7 +68,6 @@ export class PhaseState extends Struct({
     action.actionParams.assertEquals(newPosition.hash());
 
     let [proot, pkey] = pieceWitness.computeRootAndKey(piece.hash());
-    proot.assertEquals(gameState.piecesRoot);
     proot.assertEquals(this.currentPiecesState);
     pkey.assertEquals(piece.id);
 
@@ -81,8 +79,7 @@ export class PhaseState extends Struct({
 
     // Old Witness, old position is occupied
     [oldAroot, oldAkey] = oldPositionArenaWitness.computeRootAndKey(Field(1));
-    oldAroot.assertEquals(gameState.arenaRoot);
-    oldAroot.assertEquals(this.startingArenaState);
+    oldAroot.assertEquals(this.currentArenaState);
     oldAkey.assertEquals(piece.position.hash());
 
     // Old Witness, new position is un-occupied
@@ -99,7 +96,7 @@ export class PhaseState extends Struct({
 
     const endingPiece = piece.clone();
     endingPiece.position = newPosition;
-    [proot, pkey] = pieceWitness.computeRootAndKey(endingPiece.position.hash());
+    [proot, pkey] = pieceWitness.computeRootAndKey(endingPiece.hash());
 
     return new PhaseState(
       action.nonce,
