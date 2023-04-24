@@ -173,10 +173,10 @@ describe('PhaseState', () => {
       pieceMapAfterSecondMove.set(Field(1), piece.hash());
 
       expect(secondUpdatePhaseState.currentPiecesState.toString()).toBe(
-        pieceMapAfterSecondMove.getRoot()
+        pieceMapAfterSecondMove.getRoot().toString()
       );
       expect(secondUpdatePhaseState.currentArenaState.toString()).toBe(
-        secondMoveArenaMap.getRoot()
+        secondMoveArenaMap.getRoot().toString()
       );
     });
 
