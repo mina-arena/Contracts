@@ -161,10 +161,10 @@ describe('PhaseState', () => {
 
       // the starting hashes are equal to the empty game
       expect(secondUpdatePhaseState.startingPiecesState.toString()).toBe(
-        GameState.emptyMerkleMaps().pieces.getRoot()
+        GameState.emptyMerkleMaps().pieces.getRoot().toString()
       );
       expect(secondUpdatePhaseState.startingArenaState.toString()).toBe(
-        GameState.emptyMerkleMaps().arena.getRoot()
+        GameState.emptyMerkleMaps().arena.getRoot().toString()
       );
 
       // the current hashes are equal to the phase after both moves
