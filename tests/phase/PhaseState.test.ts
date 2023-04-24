@@ -52,8 +52,6 @@ describe('PhaseState', () => {
       const expectedArenaRoot = emptyGameState.arenaRoot.toString();
       const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();
 
-      console.log('E');
-      console.log(initialPhaseState.toJSON());
       expect(initialPhaseState.toJSON()).toEqual({
         actionsNonce: expectedActionsNonce,
         startingPiecesState: expectedPiecesRoot,
