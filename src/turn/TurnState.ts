@@ -62,8 +62,8 @@ export class TurnState extends Struct({
     return new TurnState(
       phaseState.nonce,
       this.startingPiecesState,
-      this.startingArenaState,
       phaseState.currentPiecesState,
+      this.startingArenaState,
       phaseState.currentArenaState,
       this.playerPublicKey
     );
@@ -76,7 +76,7 @@ export class TurnState extends Struct({
       currentPiecesState: this.currentPiecesState.toString(),
       startingArenaState: this.startingArenaState.toString(),
       currentArenaState: this.currentArenaState.toString(),
-      player: this.playerPublicKey.toBase58(),
+      playerPublicKey: this.playerPublicKey.toBase58(),
     };
   }
 }

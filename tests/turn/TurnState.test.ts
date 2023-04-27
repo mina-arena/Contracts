@@ -74,12 +74,19 @@ describe('TurnState', () => {
 
       const newTurnState = initialTurnState.applyPhase(dummyPhase);
 
-      expect(newTurnState.currentPiecesState.toString()).toBe(
-        dummyPhase.currentPiecesState.toString()
-      );
-      expect(newTurnState.currentArenaState.toString()).toBe(
-        dummyPhase.currentArenaState.toString()
-      );
+      const expectedPhaseNonce = 1;
+      const expectedPiecesRoot = Field(0).toString();
+      const expectedArenaRoot = Field(0).toString();
+      const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();
+
+      expect(newTurnState.toJSON()).toEqual({
+        phaseNonce: expectedPhaseNonce,
+        startingPiecesState: expectedPiecesRoot,
+        currentPiecesState: Field(10).toString(),
+        startingArenaState: expectedArenaRoot,
+        currentArenaState: Field(20).toString(),
+        playerPublicKey: expectedPlayer,
+      });
     });
 
     it('rejects a phase with nonce too small', async () => {

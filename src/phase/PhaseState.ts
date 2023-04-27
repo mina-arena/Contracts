@@ -124,7 +124,7 @@ export class PhaseState extends Struct({
       currentPiecesState: this.currentPiecesState.toString(),
       startingArenaState: this.startingArenaState.toString(),
       currentArenaState: this.currentArenaState.toString(),
-      player: this.playerPublicKey.toBase58(),
+      playerPublicKey: this.playerPublicKey.toBase58(),
     };
   }
 }

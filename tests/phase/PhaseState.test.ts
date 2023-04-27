@@ -40,12 +40,14 @@ describe('PhaseState', () => {
 
   describe('init', () => {
     it('initalizes and serializes input', async () => {
+      const nonce = 0;
       const expectedActionsNonce = 0;
       const expectedPiecesRoot = emptyGameState.piecesRoot.toString();
       const expectedArenaRoot = emptyGameState.arenaRoot.toString();
       const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();
 
       expect(initialPhaseState.toJSON()).toEqual({
+        nonce: nonce,
         actionsNonce: expectedActionsNonce,
         startingPiecesState: expectedPiecesRoot,
         currentPiecesState: expectedPiecesRoot,
