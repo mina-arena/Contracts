@@ -1,12 +1,4 @@
-import {
-  isReady,
-  PrivateKey,
-  Field,
-  Poseidon,
-  Bool,
-  shutdown,
-  MerkleMap,
-} from 'snarkyjs';
+import { isReady, PrivateKey, Field, shutdown } from 'snarkyjs';
 
 import { PhaseState } from '../../src/phase/PhaseState';
 import { GameState } from '../../src/game/GameState';
@@ -33,6 +25,7 @@ describe('PhaseState', () => {
     );
     initialPhaseState = new PhaseState(
       Field(0),
+      Field(0),
       emptyGameState.piecesRoot,
       emptyGameState.piecesRoot,
       emptyGameState.arenaRoot,
@@ -58,7 +51,7 @@ describe('PhaseState', () => {
         currentPiecesState: expectedPiecesRoot,
         startingArenaState: expectedArenaRoot,
         currentArenaState: expectedArenaRoot,
-        player: expectedPlayer,
+        playerPublicKey: expectedPlayer,
       });
     });
   });

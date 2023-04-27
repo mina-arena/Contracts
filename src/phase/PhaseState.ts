@@ -12,43 +12,47 @@ import { Position } from '../objects/Position';
 import { Action } from '../objects/Action';
 
 export class PhaseState extends Struct({
+  nonce: Field,
   actionsNonce: Field, // nonce of actions processed so far
   startingPiecesState: Field, // Pieces state before this turn
   currentPiecesState: Field, // Pieces state after the actions applied in this turn
   startingArenaState: Field, // Arena state before this turn
   currentArenaState: Field, // Arena state after the actions applied in this turn
-  player: PublicKey, // the player this turn is for
+  playerPublicKey: PublicKey, // the player this turn is for
 }) {
   constructor(
+    nonce: Field,
     actionsNonce: Field,
     startingPiecesState: Field,
     currentPiecesState: Field,
     startingArenaState: Field,
     currentArenaState: Field,
-    player: PublicKey
+    playerPublicKey: PublicKey
   ) {
     super({
+      nonce,
       actionsNonce,
       startingPiecesState,
       currentPiecesState,
       startingArenaState,
       currentArenaState,
-      player,
+      playerPublicKey,
     });
   }
 
   static init(
     startingPiecesState: Field,
     startingArenaState: Field,
-    player: PublicKey
+    playerPublicKey: PublicKey
   ): PhaseState {
     return new PhaseState(
+      Field(0),
       Field(0),
       startingPiecesState,
       startingPiecesState,
       startingArenaState,
       startingArenaState,
-      player
+      playerPublicKey
     );
   }
 
@@ -61,7 +65,10 @@ export class PhaseState extends Struct({
     newPositionArenaWitness: MerkleMapWitness,
     newPosition: Position
   ): PhaseState {
-    const v = actionSignature.verify(this.player, action.signatureArguments());
+    const v = actionSignature.verify(
+      this.playerPublicKey,
+      action.signatureArguments()
+    );
     v.assertTrue();
     action.nonce.assertGreaterThan(this.actionsNonce);
     action.actionType.assertEquals(Field(0)); // action is a "move" action
@@ -99,59 +106,25 @@ export class PhaseState extends Struct({
     [proot, pkey] = pieceWitness.computeRootAndKey(endingPiece.hash());
 
     return new PhaseState(
+      this.nonce,
       action.nonce,
       this.startingPiecesState,
       proot,
       this.startingArenaState,
       newAroot,
-      this.player
+      this.playerPublicKey
     );
   }
 
-  // TODO: Add actions other than move based on turn ADR
-  // applyAttackAction(
-  //   action: Action,
-  //   actionSignature: Signature,
-  //   piece: Piece,
-  //   gameState: GameState,
-  //   pieceWitness: MerkleMapWitness,
-  //   otherPieceWitness: MerkleMapWitness,
-  //   otherPiece: Piece
-  // ): PhaseState {
-  //   const v = actionSignature.verify(this.player, action.signatureArguments());
-  //   v.assertTrue();
-  //   action.nonce.assertGt(this.actionsNonce);
-  //   action.actionType.assertEquals(Field(1)); // action is an "attack" action
-  //   action.actionParams.assertEquals(otherPiece.hash());
-
-  //   let [root, key] = pieceWitness.computeRootAndKey(piece.hash());
-  //   root.assertEquals(gameState.piecesRoot);
-  //   root.assertEquals(this.currentPiecesState);
-  //   key.assertEquals(piece.position.hash());
-
-  //   [root, key] = otherPieceWitness.computeRootAndKey(otherPiece.hash());
-  //   root.assertEquals(this.currentPiecesState);
-  //   key.assertEquals(otherPiece.position.hash());
-
-  //   // TODO: verify attack is valid
-  //   // - Unit is within range
-  //   // - Other checks?
-
-  //   otherPiece.condition.health = otherPiece.condition.health.sub(1);
-
-  //   [root, key] = otherPieceWitness.computeRootAndKey(otherPiece.hash());
-
-  //   return new PhaseState(action.nonce, this.startingPiecesState, root, this.player);
-  // }
-
   toJSON() {
     return {
+      nonce: Number(this.nonce.toString()),
       actionsNonce: Number(this.actionsNonce.toString()),
       startingPiecesState: this.startingPiecesState.toString(),
       currentPiecesState: this.currentPiecesState.toString(),
       startingArenaState: this.startingArenaState.toString(),
       currentArenaState: this.currentArenaState.toString(),
-      player: this.player.toBase58(),
+      player: this.playerPublicKey.toBase58(),
     };
   }
 }
