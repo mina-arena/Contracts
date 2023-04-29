@@ -8,13 +8,16 @@ export class GameState extends Struct({
   piecesRoot: Field, // root hash of pieces in the arena keyed by their id
   arenaRoot: Field, // root hash of a merkle map of positions which are occupied
   playerTurn: Field,
-  player1: PublicKey,
-  player2: PublicKey,
+  player1PublicKey: PublicKey,
+  player2PublicKey: PublicKey,
   arenaLength: UInt32,
   arenaWidth: UInt32,
   turnsCompleted: UInt32,
 }) {
-  static empty(player1: PublicKey, player2: PublicKey): GameState {
+  static empty(
+    player1PublicKey: PublicKey,
+    player2PublicKey: PublicKey
+  ): GameState {
     const pieces = new MerkleMap();
     const arena = new MerkleMap();
 
@@ -39,10 +42,10 @@ export class GameState extends Struct({
       piecesRoot: pieces.getRoot(),
       arenaRoot: arena.getRoot(),
       playerTurn: Field(0),
-      player1,
-      player2,
-      arenaLength: UInt32.from(16),
-      arenaWidth: UInt32.from(16),
+      player1PublicKey,
+      player2PublicKey,
+      arenaLength: UInt32.from(800),
+      arenaWidth: UInt32.from(800),
       turnsCompleted: UInt32.from(0),
     });
   }

@@ -15,6 +15,11 @@ export class Position extends Struct({
     return Poseidon.hash(this.x.toFields().concat(this.y.toFields()));
   }
 
+  getMerkleKey(arenaWidth: number): bigint {
+    const rowIdx = this.y.mul(arenaWidth);
+    return rowIdx.add(this.x).toBigint();
+  }
+
   verifyDistance(other: Position, assertedDistance: UInt32): Bool {
     /**
      * x, y in our positions are UInt32, but we need to allow negative numbers

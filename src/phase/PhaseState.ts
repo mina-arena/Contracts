@@ -10,6 +10,7 @@ import { GameState } from '../game/GameState';
 import { Piece } from '../objects/Piece';
 import { Position } from '../objects/Position';
 import { Action } from '../objects/Action';
+import { ArenaMerkleWitness } from '../objects/ArenaMerkleTree';
 
 export class PhaseState extends Struct({
   nonce: Field,
@@ -61,8 +62,8 @@ export class PhaseState extends Struct({
     actionSignature: Signature,
     piece: Piece,
     pieceWitness: MerkleMapWitness,
-    oldPositionArenaWitness: MerkleMapWitness,
-    newPositionArenaWitness: MerkleMapWitness,
+    oldPositionArenaWitness: ArenaMerkleWitness,
+    newPositionArenaWitness: ArenaMerkleWitness,
     newPosition: Position
   ): PhaseState {
     const v = actionSignature.verify(
@@ -85,21 +86,21 @@ export class PhaseState extends Struct({
     let newAkey: Field;
 
     // Old Witness, old position is occupied
-    [oldAroot, oldAkey] = oldPositionArenaWitness.computeRootAndKey(Field(1));
+    oldAroot = oldPositionArenaWitness.calculateRoot(Field(1));
+    oldAkey = oldPositionArenaWitness.calculateIndex();
     oldAroot.assertEquals(this.currentArenaState);
-    oldAkey.assertEquals(piece.position.hash());
+    oldAkey.assertEquals(Field(piece.position.getMerkleKey(800)));
 
     // Old Witness, new position is un-occupied
-    [midAroot, newAkey] = newPositionArenaWitness.computeRootAndKey(Field(0));
+    midAroot = newPositionArenaWitness.calculateRoot(Field(0));
+    newAkey = newPositionArenaWitness.calculateIndex();
     // assert that the mid tree with new position un-occupied == the old tree with the old position un-occupied
     // e.g. every other leaf must be the same; they are the same tree outside of these 2 leaves
-    midAroot.assertEquals(
-      oldPositionArenaWitness.computeRootAndKey(Field(0))[0]
-    );
-    newAkey.assertEquals(newPosition.hash());
+    midAroot.assertEquals(oldPositionArenaWitness.calculateRoot(Field(0)));
+    newAkey.assertEquals(Field(newPosition.getMerkleKey(800)));
 
     // calculate new tree root based on the new position being occupied, this is the new root of the arena
-    [newAroot, newAkey] = newPositionArenaWitness.computeRootAndKey(Field(1));
+    newAroot = newPositionArenaWitness.calculateRoot(Field(1));
 
     const endingPiece = piece.clone();
     endingPiece.position = newPosition;
