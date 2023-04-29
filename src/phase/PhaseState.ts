@@ -1,16 +1,11 @@
-import {
-  Field,
-  Struct,
-  Signature,
-  PublicKey,
-  MerkleMapWitness,
-} from 'snarkyjs';
+import { Field, Struct, Signature, PublicKey } from 'snarkyjs';
 
 import { GameState } from '../game/GameState';
 import { Piece } from '../objects/Piece';
 import { Position } from '../objects/Position';
 import { Action } from '../objects/Action';
 import { ArenaMerkleWitness } from '../objects/ArenaMerkleTree';
+import { PiecesMerkleWitness } from '../objects/PiecesMerkleTree';
 
 export class PhaseState extends Struct({
   nonce: Field,
@@ -61,7 +56,7 @@ export class PhaseState extends Struct({
     action: Action,
     actionSignature: Signature,
     piece: Piece,
-    pieceWitness: MerkleMapWitness,
+    pieceWitness: PiecesMerkleWitness,
     oldPositionArenaWitness: ArenaMerkleWitness,
     newPositionArenaWitness: ArenaMerkleWitness,
     newPosition: Position
@@ -75,7 +70,8 @@ export class PhaseState extends Struct({
     action.actionType.assertEquals(Field(0)); // action is a "move" action
     action.actionParams.assertEquals(newPosition.hash());
 
-    let [proot, pkey] = pieceWitness.computeRootAndKey(piece.hash());
+    let proot = pieceWitness.calculateRoot(piece.hash());
+    let pkey = pieceWitness.calculateIndex();
     proot.assertEquals(this.currentPiecesState);
     pkey.assertEquals(piece.id);
 
@@ -104,7 +100,7 @@ export class PhaseState extends Struct({
 
     const endingPiece = piece.clone();
     endingPiece.position = newPosition;
-    [proot, pkey] = pieceWitness.computeRootAndKey(endingPiece.hash());
+    proot = pieceWitness.calculateRoot(endingPiece.hash());
 
     return new PhaseState(
       this.nonce,

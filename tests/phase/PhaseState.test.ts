@@ -1,11 +1,4 @@
-import {
-  isReady,
-  PrivateKey,
-  Field,
-  shutdown,
-  MerkleMap,
-  UInt32,
-} from 'snarkyjs';
+import { isReady, PrivateKey, Field, shutdown, UInt32 } from 'snarkyjs';
 
 import { PhaseState } from '../../src/phase/PhaseState';
 import { GameState } from '../../src/game/GameState';
@@ -14,6 +7,7 @@ import { Position } from '../../src/objects/Position';
 import { Piece } from '../../src/objects/Piece';
 import { Unit } from '../../src/objects/Unit';
 import { ArenaMerkleTree } from '../../src/objects/ArenaMerkleTree';
+import { PiecesMerkleTree } from '../../src/objects/PiecesMerkleTree';
 
 await isReady;
 
@@ -22,12 +16,12 @@ describe('PhaseState', () => {
   let player2PrivateKey: PrivateKey;
   let gameState: GameState;
   let initialPhaseState: PhaseState;
-  let piecesMap: MerkleMap;
+  let piecesTree: PiecesMerkleTree;
   let arenaTree: ArenaMerkleTree;
   beforeEach(async () => {
     player1PrivateKey = PrivateKey.random();
     player2PrivateKey = PrivateKey.random();
-    piecesMap = new MerkleMap();
+    piecesTree = new PiecesMerkleTree();
     const piece1 = new Piece(
       Field(1),
       Position.fromXY(100, 20),
@@ -38,13 +32,13 @@ describe('PhaseState', () => {
       Position.fromXY(120, 750),
       Unit.default()
     );
-    piecesMap.set(piece1.id, piece1.hash());
-    piecesMap.set(piece2.id, piece2.hash());
+    piecesTree.tree.setLeaf(piece1.id.toBigInt(), piece1.hash());
+    piecesTree.tree.setLeaf(piece2.id.toBigInt(), piece2.hash());
     arenaTree = new ArenaMerkleTree();
     arenaTree.set(100, 20, Field(1));
     arenaTree.set(120, 750, Field(1));
     gameState = new GameState({
-      piecesRoot: piecesMap.getRoot(),
+      piecesRoot: piecesTree.tree.getRoot(),
       arenaRoot: arenaTree.tree.getRoot(),
       playerTurn: Field(0),
       player1PublicKey: player1PrivateKey.toPublicKey(),
@@ -111,21 +105,21 @@ describe('PhaseState', () => {
         action,
         action.sign(player1PrivateKey),
         piece,
-        piecesMap.getWitness(Field(1)), // witness game pieces map at piece 1 path
+        piecesTree.getWitness(1n), // witness game pieces map at piece 1 path
         arenaTree.getWitness(100, 20), // witness arena map at old position path
         arenaTreeBothUnoccupied.getWitness(100, 100), // winess new arena map at new position path
         newPosition
       );
 
       // actually apply the move to the merkle maps
-      const pieceMapAfterMove = piecesMap;
+      const pieceMapAfterMove = piecesTree;
       piece.position = newPosition;
-      pieceMapAfterMove.set(Field(1), piece.hash());
+      pieceMapAfterMove.tree.setLeaf(1n, piece.hash());
 
       arenaTreeBothUnoccupied.set(100, 100, Field(1));
 
       // the new phase state represents the piece state after move
-      expect(pieceMapAfterMove.getRoot().toString()).toBe(
+      expect(pieceMapAfterMove.tree.getRoot().toString()).toBe(
         newPhaseState.currentPiecesState.toString()
       );
 
@@ -139,24 +133,19 @@ describe('PhaseState', () => {
       const arenaTreeBothUnoccupied = arenaTree.clone();
       arenaTreeBothUnoccupied.set(100, 20, Field(0)); // set position 1 to be unoccupied to set up the move
 
-      // arena merkle map with the complete move applied
-      const arenaMapAfterMove = GameState.emptyMerkleMaps().arena;
-      arenaMapAfterMove.set(oldPosition.hash(), Field(0));
-      arenaMapAfterMove.set(newPosition.hash(), Field(1));
-
       const newPhaseState = initialPhaseState.applyMoveAction(
         action,
         action.sign(player1PrivateKey),
         piece,
-        piecesMap.getWitness(Field(1)), // witness game pieces map at piece 1 path
+        piecesTree.getWitness(1n), // witness game pieces map at piece 1 path
         arenaTree.getWitness(100, 20), // witness arena map at old position path
         arenaTreeBothUnoccupied.getWitness(100, 100), // winess new arena map at new position path
         newPosition
       );
 
-      const pieceMapAfterMove = piecesMap;
+      const pieceMapAfterMove = piecesTree;
       piece.position = newPosition;
-      pieceMapAfterMove.set(Field(1), piece.hash());
+      pieceMapAfterMove.tree.setLeaf(1n, piece.hash());
       arenaTreeBothUnoccupied.set(100, 100, Field(1));
 
       piece = new Piece(Field(2), Position.fromXY(120, 750), Unit.default());
@@ -170,28 +159,24 @@ describe('PhaseState', () => {
         action,
         action.sign(player1PrivateKey),
         piece,
-        piecesMap.getWitness(Field(2)),
+        piecesTree.getWitness(2n),
         arenaTreeBothUnoccupied.getWitness(120, 750),
         secondMoveArenaTree.getWitness(100, 700),
         newNewPosition
       );
 
-      // the starting hashes are equal to the empty game
-      // expect(secondUpdatePhaseState.startingPiecesState.toString()).toBe(
-      //   GameState.emptyMerkleMaps().pieces.getRoot().toString()
-      // );
       expect(secondUpdatePhaseState.startingArenaState.toString()).toBe(
         arenaTree.tree.getRoot().toString() // the original arena tree
       );
 
       // the current hashes are equal to the phase after both moves
-      const pieceMapAfterSecondMove = piecesMap;
+      const pieceMapAfterSecondMove = piecesTree;
       piece.position = newNewPosition;
-      pieceMapAfterSecondMove.set(Field(2), piece.hash());
+      pieceMapAfterSecondMove.tree.setLeaf(2n, piece.hash());
       secondMoveArenaTree.set(100, 700, Field(1));
 
       expect(secondUpdatePhaseState.currentPiecesState.toString()).toBe(
-        pieceMapAfterSecondMove.getRoot().toString()
+        pieceMapAfterSecondMove.tree.getRoot().toString()
       );
       expect(secondUpdatePhaseState.currentArenaState.toString()).toBe(
         secondMoveArenaTree.tree.getRoot().toString()
@@ -214,7 +199,7 @@ describe('PhaseState', () => {
           action,
           action.sign(player1PrivateKey),
           piece,
-          piecesMap.getWitness(Field(1)), // witness game pieces map at piece 1 path
+          piecesTree.getWitness(1n), // witness game pieces map at piece 1 path
           arenaTree.getWitness(100, 20), // witness arena map at old position path
           arenaTreeBothUnoccupied.getWitness(100, 100), // winess new arena map at new position path
           newPosition
@@ -238,7 +223,7 @@ describe('PhaseState', () => {
           action,
           action.sign(player1PrivateKey),
           piece,
-          piecesMap.getWitness(Field(1)), // witness game pieces map at piece 1 path
+          piecesTree.getWitness(1n), // witness game pieces map at piece 1 path
           arenaTree.getWitness(100, 20), // witness arena map at old position path
           arenaTreeBothUnoccupied.getWitness(120, 750), // winess new arena map at new position path
           newPosition

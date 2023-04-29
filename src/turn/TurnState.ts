@@ -1,10 +1,4 @@
-import {
-  Field,
-  Struct,
-  Signature,
-  PublicKey,
-  MerkleMapWitness,
-} from 'snarkyjs';
+import { Field, Struct, Signature, PublicKey } from 'snarkyjs';
 
 import { GameState } from '../game/GameState';
 import { Piece } from '../objects/Piece';

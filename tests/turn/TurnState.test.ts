@@ -1,12 +1,4 @@
-import {
-  isReady,
-  PrivateKey,
-  Field,
-  Poseidon,
-  Bool,
-  shutdown,
-  MerkleMap,
-} from 'snarkyjs';
+import { isReady, PrivateKey, Field, Poseidon, Bool, shutdown } from 'snarkyjs';
 
 import { GameState } from '../../src/game/GameState';
 import { Action } from '../../src/objects/Action';
