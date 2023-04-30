@@ -37,7 +37,6 @@ export class Position extends Struct({
     );
 
     const x_sq_plus_y_sq = _x.square().add(_y.square());
-
     const isEq = UInt32.from(x_sq_plus_y_sq).equals(
       assertedDistance.mul(assertedDistance)
     );

@@ -27,6 +27,7 @@ export class ArenaMerkleTree {
     newTree.tree = new MerkleTree(TREE_HEIGHT);
     Object.keys(this.obj).forEach((k) => {
       newTree.tree.setLeaf(BigInt(k), Field(this.obj[k]));
+      newTree.obj[k] = this.obj[k];
     });
     return newTree;
   }

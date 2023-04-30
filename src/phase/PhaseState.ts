@@ -1,4 +1,4 @@
-import { Field, Struct, Signature, PublicKey } from 'snarkyjs';
+import { Field, Struct, Signature, PublicKey, UInt32 } from 'snarkyjs';
 
 import { GameState } from '../game/GameState';
 import { Piece } from '../objects/Piece';
@@ -59,8 +59,14 @@ export class PhaseState extends Struct({
     pieceWitness: PiecesMerkleWitness,
     oldPositionArenaWitness: ArenaMerkleWitness,
     newPositionArenaWitness: ArenaMerkleWitness,
-    newPosition: Position
+    newPosition: Position,
+    assertedMoveDistance: UInt32
   ): PhaseState {
+    this.playerPublicKey.assertEquals(piece.playerPublicKey);
+    piece.position
+      .verifyDistance(newPosition, assertedMoveDistance)
+      .assertTrue();
+    assertedMoveDistance.assertLessThanOrEqual(piece.condition.movement);
     const v = actionSignature.verify(
       this.playerPublicKey,
       action.signatureArguments()
