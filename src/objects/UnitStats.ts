@@ -1,10 +1,10 @@
-import { Field, Struct, Poseidon } from 'snarkyjs';
+import { Field, Struct, Poseidon, UInt32 } from 'snarkyjs';
 
 export class UnitStats extends Struct({
-  health: Field,
-  movement: Field,
+  health: UInt32,
+  movement: UInt32,
 }) {
   hash(): Field {
-    return Poseidon.hash([this.health, this.movement]);
+    return Poseidon.hash([this.health.value, this.movement.value]);
   }
 }
