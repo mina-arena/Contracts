@@ -1,4 +1,4 @@
-import { Field, Struct, Poseidon } from 'snarkyjs';
+import { Field, Struct, Poseidon, UInt32 } from 'snarkyjs';
 
 import { UnitStats } from './UnitStats';
 
@@ -10,8 +10,8 @@ export class Unit extends Struct({
   static default(): Unit {
     return new Unit({
       stats: new UnitStats({
-        health: Field(3),
-        movement: Field(3),
+        health: UInt32.from(3),
+        movement: UInt32.from(50),
       }),
     });
   }

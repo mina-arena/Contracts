@@ -9,6 +9,34 @@ describe('Position', () => {
     setTimeout(shutdown, 0);
   });
 
+  describe('getMerkleKey', () => {
+    it('calculates merkle keys correctly', async () => {
+      /**
+       * 0 , 1 , 2
+       * 3 , 4 , 5
+       * 6 , 7 , 8
+       *
+       *     x
+       *    /  \
+       *   x    x
+       *  / \  /  \
+       * x   xx    x
+       * / \ /\ /\  /\
+       * 0 1 2 3 4 5 6 7 ...
+       */
+
+      expect(Position.fromXY(0, 1).getMerkleKey(3).toString()).toBe(
+        3n.toString()
+      );
+      expect(Position.fromXY(1, 1).getMerkleKey(3).toString()).toBe(
+        4n.toString()
+      );
+      expect(Position.fromXY(2, 0).getMerkleKey(3).toString()).toBe(
+        2n.toString()
+      );
+    });
+  });
+
   describe('verifyDistance', () => {
     it('returns true when the asserted distance is correct', async () => {
       const pos1 = Position.fromXY(10, 10);

@@ -23,5 +23,6 @@ jobs:
           npm run build --if-present
           npm test tests/objects
           npm test tests/phase
+          npm run test tests/turn
         env:
           CI: true
