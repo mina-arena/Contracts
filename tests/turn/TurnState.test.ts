@@ -1,4 +1,4 @@
-import { isReady, PrivateKey, Field, Poseidon, Bool, shutdown } from 'snarkyjs';
+import { PrivateKey, Field, Poseidon, Bool } from 'snarkyjs';
 
 import { GameState } from '../../src/game/GameState';
 import { Action } from '../../src/objects/Action';
@@ -7,8 +7,6 @@ import { Piece } from '../../src/objects/Piece';
 import { Unit } from '../../src/objects/Unit';
 import { TurnState } from '../../src/turn/TurnState';
 import { PhaseState } from '../../src/phase/PhaseState';
-
-await isReady;
 
 describe('TurnState', () => {
   let player1PrivateKey: PrivateKey;
@@ -28,10 +26,6 @@ describe('TurnState', () => {
       Field(0),
       player1PrivateKey.toPublicKey()
     );
-  });
-
-  afterAll(async () => {
-    setTimeout(shutdown, 0);
   });
 
   describe('init', () => {

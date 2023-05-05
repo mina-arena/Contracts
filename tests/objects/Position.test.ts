@@ -1,14 +1,8 @@
-import { UInt32, isReady, shutdown } from 'snarkyjs';
+import { UInt32 } from 'snarkyjs';
 
 import { Position } from '../../src/objects/Position';
 
-await isReady;
-
 describe('Position', () => {
-  afterAll(async () => {
-    setTimeout(shutdown, 0);
-  });
-
   describe('getMerkleKey', () => {
     it('calculates merkle keys correctly', async () => {
       /**

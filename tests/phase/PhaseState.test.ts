@@ -1,4 +1,4 @@
-import { isReady, PrivateKey, Field, shutdown, UInt32 } from 'snarkyjs';
+import { PrivateKey, Field, UInt32 } from 'snarkyjs';
 
 import { PhaseState } from '../../src/phase/PhaseState';
 import { GameState } from '../../src/game/GameState';
@@ -8,8 +8,6 @@ import { Piece } from '../../src/objects/Piece';
 import { Unit } from '../../src/objects/Unit';
 import { ArenaMerkleTree } from '../../src/objects/ArenaMerkleTree';
 import { PiecesMerkleTree } from '../../src/objects/PiecesMerkleTree';
-
-await isReady;
 
 describe('PhaseState', () => {
   let player1PrivateKey: PrivateKey;
@@ -67,10 +65,6 @@ describe('PhaseState', () => {
       gameState.arenaRoot,
       player1PrivateKey.toPublicKey()
     );
-  });
-
-  afterAll(async () => {
-    setTimeout(shutdown, 0);
   });
 
   describe('init', () => {

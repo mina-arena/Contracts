@@ -1,11 +1,4 @@
-import {
-  Field,
-  Poseidon,
-  PrivateKey,
-  UInt32,
-  isReady,
-  shutdown,
-} from 'snarkyjs';
+import { Field, Poseidon, PrivateKey, UInt32 } from 'snarkyjs';
 
 import { Piece } from '../../src/objects/Piece';
 import { Unit } from '../../src/objects/Unit';
@@ -13,17 +6,14 @@ import { Position } from '../../src/objects/Position';
 import { PieceCondition } from '../../src/objects/PieceCondition';
 import { UnitStats } from '../../src/objects/UnitStats';
 
-await isReady;
-
 describe('Piece', () => {
-  afterAll(async () => {
-    setTimeout(shutdown, 0);
-  });
-
   describe('hash', () => {
     it('returns the expected hash', async () => {
       const playerPublicKey = PrivateKey.random().toPublicKey();
-      const stats = new UnitStats({ health: Field(5), movement: Field(2) });
+      const stats = new UnitStats({
+        health: UInt32.from(5),
+        movement: UInt32.from(2),
+      });
       const unit = new Unit({ stats });
       const pos = Position.fromXY(50, 51);
       const pieceCondition = new PieceCondition(stats);
@@ -39,8 +29,8 @@ describe('Piece', () => {
       );
 
       const updatedCondition = new PieceCondition({
-        health: Field(4),
-        movement: Field(2),
+        health: UInt32.from(4),
+        movement: UInt32.from(2),
       });
       piece.condition.health = piece.condition.health.sub(1);
 

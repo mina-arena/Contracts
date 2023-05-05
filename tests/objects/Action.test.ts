@@ -1,14 +1,8 @@
-import { isReady, PrivateKey, Field, Poseidon, Bool, shutdown } from 'snarkyjs';
+import { PrivateKey, Field, Poseidon, Bool } from 'snarkyjs';
 
 import { Action } from '../../src/objects/Action';
 
-await isReady;
-
 describe('Action', () => {
-  afterAll(async () => {
-    setTimeout(shutdown, 0);
-  });
-
   it('signs data correctly', async () => {
     const signer = PrivateKey.random();
     const nonce = Field(3);
