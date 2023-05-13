@@ -14,6 +14,9 @@ describe('Piece', () => {
         health: UInt32.from(5),
         movement: UInt32.from(2),
         rangedAttackRange: UInt32.from(0),
+        hitRoll: UInt32.from(2),
+        woundRoll: UInt32.from(2),
+        saveRoll: UInt32.from(6),
       });
       const unit = new Unit({ stats });
       const pos = Position.fromXY(50, 51);
@@ -33,6 +36,9 @@ describe('Piece', () => {
         health: UInt32.from(4),
         movement: UInt32.from(2),
         rangedAttackRange: UInt32.from(0),
+        hitRoll: UInt32.from(2),
+        woundRoll: UInt32.from(2),
+        saveRoll: UInt32.from(6),
       });
       piece.condition.health = piece.condition.health.sub(1);
 
