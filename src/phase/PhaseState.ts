@@ -1,4 +1,13 @@
-import { Field, Struct, Signature, PublicKey, UInt32 } from 'snarkyjs';
+import {
+  Field,
+  Struct,
+  Signature,
+  PublicKey,
+  UInt32,
+  PrivateKey,
+  Circuit,
+  Bool,
+} from 'snarkyjs';
 
 import { GameState } from '../game/GameState';
 import { Piece } from '../objects/Piece';
@@ -6,6 +15,7 @@ import { Position } from '../objects/Position';
 import { Action } from '../objects/Action';
 import { ArenaMerkleWitness } from '../objects/ArenaMerkleTree';
 import { PiecesMerkleWitness } from '../objects/PiecesMerkleTree';
+import { EncrytpedAttackRoll } from '../objects/AttackDiceRolls';
 
 export class PhaseState extends Struct({
   nonce: Field,
@@ -115,6 +125,68 @@ export class PhaseState extends Struct({
       proot,
       this.startingArenaState,
       newAroot,
+      this.playerPublicKey
+    );
+  }
+
+  // Todo: currently not validating the pieces belong in the game
+  applyRangedAttackAction(
+    action: Action,
+    actionSignature: Signature,
+    piece: Piece,
+    otherPiece: Piece,
+    assertedAttackDistance: UInt32,
+    attackRoll: EncrytpedAttackRoll,
+    serverSecretKey: PrivateKey
+  ): PhaseState {
+    this.playerPublicKey.assertEquals(piece.playerPublicKey);
+    piece.position
+      .verifyDistance(otherPiece.position, assertedAttackDistance)
+      .assertTrue();
+    assertedAttackDistance.assertLessThanOrEqual(
+      piece.condition.rangedAttackRange
+    );
+    const v = actionSignature.verify(
+      this.playerPublicKey,
+      action.signatureArguments()
+    );
+    v.assertTrue();
+
+    action.nonce.assertGreaterThan(this.actionsNonce);
+    action.actionType.assertEquals(Field(1)); // action is a "ranged attack" action
+    action.actionParams.assertEquals(otherPiece.hash());
+
+    const decrytpedRolls = attackRoll.decryptRoll(serverSecretKey);
+    // roll for hit
+    const hit = Circuit.if(
+      decrytpedRolls.hit.greaterThanOrEqual(piece.condition.hitRoll.value),
+      Bool(true),
+      Bool(false)
+    );
+
+    // roll for wound
+    const wound = Circuit.if(hit, Bool(true), Bool(false));
+
+    // roll for save
+    const save = Circuit.if(wound, Bool(false), Bool(false));
+
+    let healthDiff = Circuit.if(wound, UInt32.from(2), UInt32.from(0));
+
+    const newHealth = Circuit.if(
+      healthDiff.greaterThanOrEqual(otherPiece.condition.health),
+      UInt32.from(0),
+      otherPiece.condition.health.sub(healthDiff)
+    );
+
+    otherPiece.condition.health = newHealth;
+
+    return new PhaseState(
+      this.nonce,
+      action.nonce,
+      this.startingPiecesState,
+      this.currentPiecesState,
+      this.startingArenaState,
+      this.currentArenaState,
       this.playerPublicKey
     );
   }

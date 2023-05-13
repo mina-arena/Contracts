@@ -12,6 +12,7 @@ export class Unit extends Struct({
       stats: new UnitStats({
         health: UInt32.from(3),
         movement: UInt32.from(50),
+        rangedAttackRange: UInt32.from(50),
       }),
     });
   }
