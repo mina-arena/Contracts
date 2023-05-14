@@ -15,14 +15,16 @@ export class Piece extends Struct({
     id: Field,
     playerPublicKey: PublicKey,
     position: Position,
-    baseUnit: Unit
+    baseUnit: Unit,
+    condition?: PieceCondition | undefined
   ) {
+    condition = condition || new PieceCondition(baseUnit.stats);
     super({
       id,
       playerPublicKey,
       position,
       baseUnit,
-      condition: new PieceCondition(baseUnit.stats),
+      condition,
     });
   }
 
@@ -40,7 +42,8 @@ export class Piece extends Struct({
       this.id,
       this.playerPublicKey,
       this.position,
-      this.baseUnit
+      this.baseUnit,
+      this.condition
     );
   }
 }

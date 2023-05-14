@@ -129,62 +129,103 @@ export class PhaseState extends Struct({
     );
   }
 
-  // Todo: currently not validating the pieces belong in the game
   applyRangedAttackAction(
     action: Action,
     actionSignature: Signature,
-    piece: Piece,
-    otherPiece: Piece,
+    attackingPiece: Piece,
+    targetPiece: Piece,
+    attackingPieceWitness: PiecesMerkleWitness,
+    targetPieceWitness: PiecesMerkleWitness,
     assertedAttackDistance: UInt32,
     attackRoll: EncrytpedAttackRoll,
     serverSecretKey: PrivateKey
   ): PhaseState {
-    this.playerPublicKey.assertEquals(piece.playerPublicKey);
-    piece.position
-      .verifyDistance(otherPiece.position, assertedAttackDistance)
-      .assertTrue();
+    const piecesRoot = attackingPieceWitness.calculateRoot(
+      attackingPiece.hash()
+    );
+    piecesRoot.assertEquals(
+      targetPieceWitness.calculateRoot(targetPiece.hash()),
+      'Piece witnesses do not match each other'
+    );
+    piecesRoot.assertEquals(
+      this.currentPiecesState,
+      'Piece witnesses do not match the current game state'
+    );
+    this.playerPublicKey.assertEquals(attackingPiece.playerPublicKey);
+    attackingPiece.position
+      .verifyDistance(targetPiece.position, assertedAttackDistance)
+      .assertTrue('Asserted attack distance is not correct');
     assertedAttackDistance.assertLessThanOrEqual(
-      piece.condition.rangedAttackRange
+      attackingPiece.condition.rangedAttackRange,
+      'Asserted attack distance is out of range for attacking piece'
     );
     const v = actionSignature.verify(
       this.playerPublicKey,
       action.signatureArguments()
     );
-    v.assertTrue();
+    v.assertTrue('The action signature does not match the provided action');
 
-    action.nonce.assertGreaterThan(this.actionsNonce);
-    action.actionType.assertEquals(Field(1)); // action is a "ranged attack" action
-    action.actionParams.assertEquals(otherPiece.hash());
+    action.nonce.assertGreaterThan(
+      this.actionsNonce,
+      'The action nonce is LTE the most recent action nonce'
+    );
+    action.actionType.assertEquals(
+      Field(1),
+      'Action type must be 1 (ranged attack)'
+    ); // action is a "ranged attack" action
+    action.actionParams.assertEquals(
+      targetPiece.hash(),
+      'The action target is different than the proved target piece'
+    );
 
     const decrytpedRolls = attackRoll.decryptRoll(serverSecretKey);
     // roll for hit
     const hit = Circuit.if(
-      decrytpedRolls.hit.greaterThanOrEqual(piece.condition.hitRoll.value),
+      decrytpedRolls.hit.greaterThanOrEqual(
+        attackingPiece.condition.hitRoll.value
+      ),
       Bool(true),
       Bool(false)
     );
 
     // roll for wound
-    const wound = Circuit.if(hit, Bool(true), Bool(false));
-
-    // roll for save
-    const save = Circuit.if(wound, Bool(false), Bool(false));
-
-    let healthDiff = Circuit.if(wound, UInt32.from(2), UInt32.from(0));
-
-    const newHealth = Circuit.if(
-      healthDiff.greaterThanOrEqual(otherPiece.condition.health),
-      UInt32.from(0),
-      otherPiece.condition.health.sub(healthDiff)
+    const wound = Circuit.if(
+      decrytpedRolls.wound.greaterThanOrEqual(
+        attackingPiece.condition.woundRoll.value
+      ),
+      Bool(true),
+      Bool(false)
     );
 
-    otherPiece.condition.health = newHealth;
+    // roll for save
+    const notSave = Circuit.if(
+      decrytpedRolls.save.greaterThanOrEqual(
+        attackingPiece.condition.saveRoll.value
+      ),
+      Bool(false),
+      Bool(true)
+    );
+
+    let healthDiff = Circuit.if(
+      Bool.and(Bool.and(hit, wound), notSave),
+      UInt32.from(2),
+      UInt32.from(0)
+    );
+
+    const newHealth = Circuit.if(
+      healthDiff.greaterThanOrEqual(targetPiece.condition.health),
+      UInt32.from(0),
+      targetPiece.condition.health.sub(healthDiff)
+    );
+
+    targetPiece.condition.health = newHealth;
+    const newPiecesRoot = targetPieceWitness.calculateRoot(targetPiece.hash());
 
     return new PhaseState(
       this.nonce,
       action.nonce,
       this.startingPiecesState,
-      this.currentPiecesState,
+      newPiecesRoot,
       this.startingArenaState,
       this.currentArenaState,
       this.playerPublicKey
