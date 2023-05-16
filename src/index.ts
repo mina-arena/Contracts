@@ -12,6 +12,10 @@ import { Piece } from './objects/Piece';
 import { Position } from './objects/Position';
 import { PieceCondition } from './objects/PieceCondition';
 import { UnitStats } from './objects/UnitStats';
+import {
+  DecrytpedAttackRoll,
+  EncrytpedAttackRoll,
+} from './objects/AttackDiceRolls';
 
 export {
   PhaseState,
@@ -27,4 +31,6 @@ export {
   Position,
   PieceCondition,
   UnitStats,
+  DecrytpedAttackRoll,
+  EncrytpedAttackRoll,
 };
