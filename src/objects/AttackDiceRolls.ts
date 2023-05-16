@@ -5,6 +5,7 @@ import {
   Group,
   PrivateKey,
   ProvableExtended,
+  PublicKey,
   Signature,
   Struct,
 } from 'snarkyjs';
@@ -19,8 +20,34 @@ export class EncrytpedAttackRoll extends Struct({
   publicKey: Group,
   ciphertext: Circuit.array(Field, 4),
   signature: Signature,
+  rngPublicKey: PublicKey,
 }) {
+  static init(
+    publicKey: Group,
+    ciphertext: Field[],
+    signature: Signature
+  ): EncrytpedAttackRoll {
+    const rngPublicKey = PublicKey.fromBase58(
+      'B62qnxuQbhUSh6fGW6XX4kA2M3qr27trTA4xRhhyp1Aa9RQNdjpQH4G'
+    ); // test value for now
+
+    signature
+      .verify(rngPublicKey, ciphertext)
+      .assertTrue('Signature is not valid for provided ciphertext');
+
+    return new EncrytpedAttackRoll({
+      publicKey: publicKey,
+      ciphertext: ciphertext,
+      signature: signature,
+      rngPublicKey: rngPublicKey,
+    });
+  }
+
   decryptRoll(privateKey: PrivateKey): DecrytpedAttackRoll {
+    this.signature
+      .verify(this.rngPublicKey, this.ciphertext)
+      .assertTrue('Signature is not valid for provided ciphertext');
+
     const decrypted = Encryption.decrypt(
       {
         publicKey: this.publicKey,

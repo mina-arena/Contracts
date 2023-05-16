@@ -182,7 +182,7 @@ export class PhaseState extends Struct({
     // roll for hit
     const hit = Circuit.if(
       decrytpedRolls.hit.greaterThanOrEqual(
-        attackingPiece.condition.hitRoll.value
+        attackingPiece.condition.rangedHitRoll.value
       ),
       Bool(true),
       Bool(false)
@@ -191,7 +191,7 @@ export class PhaseState extends Struct({
     // roll for wound
     const wound = Circuit.if(
       decrytpedRolls.wound.greaterThanOrEqual(
-        attackingPiece.condition.woundRoll.value
+        attackingPiece.condition.rangedWoundRoll.value
       ),
       Bool(true),
       Bool(false)
@@ -200,7 +200,7 @@ export class PhaseState extends Struct({
     // roll for save
     const notSave = Circuit.if(
       decrytpedRolls.save.greaterThanOrEqual(
-        attackingPiece.condition.saveRoll.value
+        targetPiece.condition.rangedSaveRoll.value
       ),
       Bool(false),
       Bool(true)
@@ -208,7 +208,7 @@ export class PhaseState extends Struct({
 
     let healthDiff = Circuit.if(
       Bool.and(Bool.and(hit, wound), notSave),
-      UInt32.from(2),
+      attackingPiece.condition.rangedDamage,
       UInt32.from(0)
     );
 

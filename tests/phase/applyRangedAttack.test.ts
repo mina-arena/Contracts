@@ -21,7 +21,9 @@ describe('PhaseState', () => {
   let player1PrivateKey: PrivateKey;
   let player2PrivateKey: PrivateKey;
   let serverPrivateKey: PrivateKey;
-  let rngPrivateKey: PrivateKey;
+  const rngPrivateKey: PrivateKey = PrivateKey.fromBase58(
+    'EKEMFSemZ3c9SMDpEzJ1LSsRGgbDmJ6878VwSdBtMNot2wpR7GQK'
+  ); // test value for now
   let gameState: GameState;
   let initialPhaseState: PhaseState;
   let piecesTree: PiecesMerkleTree;
@@ -30,7 +32,6 @@ describe('PhaseState', () => {
     player1PrivateKey = PrivateKey.random();
     player2PrivateKey = PrivateKey.random();
     serverPrivateKey = PrivateKey.random();
-    rngPrivateKey = PrivateKey.random();
     piecesTree = new PiecesMerkleTree();
     arenaTree = new ArenaMerkleTree();
   });
@@ -56,6 +57,7 @@ describe('PhaseState', () => {
         attackingPiecePosition,
         Unit.default()
       );
+      attackingPiece.condition.rangedSaveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
       targetPiece1 = new Piece(
         Field(2),
         player2PrivateKey.toPublicKey(),
@@ -94,20 +96,16 @@ describe('PhaseState', () => {
 
       attack1 = new Action(Field(1), Field(1), targetPiece1.hash(), Field(1));
       attack2 = new Action(Field(1), Field(1), targetPiece2.hash(), Field(1));
+    });
 
+    it('hits, wounds, doesnt save, is in range', async () => {
       const enc = Encryption.encrypt(
         [Field(6), Field(6), Field(1)],
         serverPrivateKey.toPublicKey()
       );
       const sig = Signature.create(rngPrivateKey, enc.cipherText);
-      diceRolls = new EncrytpedAttackRoll({
-        publicKey: enc.publicKey,
-        ciphertext: enc.cipherText,
-        signature: sig,
-      });
-    });
+      diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
-    it('hits, wounds, doesnt save, is in range', async () => {
       const piecesTreeBefore = piecesTree.clone();
       const attackDistance = 20;
 
@@ -125,7 +123,7 @@ describe('PhaseState', () => {
         );
 
         const targetAfterAttack = targetPiece1.clone();
-        targetAfterAttack.condition.health = UInt32.from(1);
+        targetAfterAttack.condition.health = UInt32.from(1); // took 2 damage
         piecesTree.set(
           targetAfterAttack.id.toBigInt(),
           targetAfterAttack.hash()
@@ -140,6 +138,172 @@ describe('PhaseState', () => {
           );
         });
       });
+    });
+
+    it('hits, but does not wound, is in range', async () => {
+      const enc = Encryption.encrypt(
+        [Field(6), Field(1), Field(1)],
+        serverPrivateKey.toPublicKey()
+      );
+      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
+
+      const piecesTreeBefore = piecesTree.clone();
+      const attackDistance = 20;
+
+      Circuit.runAndCheck(() => {
+        const newPhaseState = initialPhaseState.applyRangedAttackAction(
+          attack1,
+          attack1.sign(player1PrivateKey),
+          attackingPiece.clone(),
+          targetPiece1.clone(),
+          piecesTree.getWitness(attackingPiece.id.toBigInt()),
+          piecesTree.getWitness(targetPiece1.id.toBigInt()),
+          UInt32.from(attackDistance),
+          diceRolls,
+          serverPrivateKey
+        );
+
+        const targetAfterAttack = targetPiece1.clone();
+        targetAfterAttack.condition.health = UInt32.from(3); // took no damage
+        piecesTree.set(
+          targetAfterAttack.id.toBigInt(),
+          targetAfterAttack.hash()
+        );
+
+        Circuit.asProver(() => {
+          expect(newPhaseState.startingPiecesState.toString()).toBe(
+            piecesTreeBefore.tree.getRoot().toString()
+          );
+          expect(newPhaseState.currentPiecesState.toString()).toBe(
+            piecesTree.tree.getRoot().toString()
+          );
+        });
+      });
+    });
+
+    it('hits, wounds, and saves, is in range', async () => {
+      const enc = Encryption.encrypt(
+        [Field(6), Field(6), Field(6)],
+        serverPrivateKey.toPublicKey()
+      );
+      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
+
+      const piecesTreeBefore = piecesTree.clone();
+      const attackDistance = 20;
+
+      Circuit.runAndCheck(() => {
+        const newPhaseState = initialPhaseState.applyRangedAttackAction(
+          attack1,
+          attack1.sign(player1PrivateKey),
+          attackingPiece.clone(),
+          targetPiece1.clone(),
+          piecesTree.getWitness(attackingPiece.id.toBigInt()),
+          piecesTree.getWitness(targetPiece1.id.toBigInt()),
+          UInt32.from(attackDistance),
+          diceRolls,
+          serverPrivateKey
+        );
+
+        const targetAfterAttack = targetPiece1.clone();
+        targetAfterAttack.condition.health = UInt32.from(3); // took no damage
+        piecesTree.set(
+          targetAfterAttack.id.toBigInt(),
+          targetAfterAttack.hash()
+        );
+
+        Circuit.asProver(() => {
+          expect(newPhaseState.startingPiecesState.toString()).toBe(
+            piecesTreeBefore.tree.getRoot().toString()
+          );
+          expect(newPhaseState.currentPiecesState.toString()).toBe(
+            piecesTree.tree.getRoot().toString()
+          );
+        });
+      });
+    });
+
+    it('is out range', async () => {
+      const enc = Encryption.encrypt(
+        [Field(6), Field(6), Field(6)],
+        serverPrivateKey.toPublicKey()
+      );
+      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
+
+      const attackDistance = 100;
+
+      expect(() => {
+        Circuit.runAndCheck(() => {
+          initialPhaseState.applyRangedAttackAction(
+            attack1,
+            attack1.sign(player1PrivateKey),
+            attackingPiece.clone(),
+            targetPiece2.clone(),
+            piecesTree.getWitness(attackingPiece.id.toBigInt()),
+            piecesTree.getWitness(targetPiece2.id.toBigInt()),
+            UInt32.from(attackDistance),
+            diceRolls,
+            serverPrivateKey
+          );
+        });
+      }).toThrow();
+    });
+
+    it('attempts to spoof dice rolls', async () => {
+      const actualRoll = Encryption.encrypt(
+        [Field(1), Field(1), Field(6)],
+        serverPrivateKey.toPublicKey()
+      );
+
+      const fakeRoll = Encryption.encrypt(
+        [Field(6), Field(6), Field(1)],
+        player1PrivateKey.toPublicKey()
+      );
+
+      let sig = Signature.create(player1PrivateKey, fakeRoll.cipherText);
+      expect(() => {
+        diceRolls = EncrytpedAttackRoll.init(
+          fakeRoll.publicKey,
+          fakeRoll.cipherText,
+          sig
+        );
+      }).toThrow(); // signature matches data, but it uses the wrong signing key
+
+      sig = Signature.create(rngPrivateKey, actualRoll.cipherText);
+      expect(() => {
+        diceRolls = EncrytpedAttackRoll.init(
+          fakeRoll.publicKey,
+          fakeRoll.cipherText,
+          sig
+        );
+      }).toThrow(); // signature uses the right signing key, but does not match the data
+
+      diceRolls = EncrytpedAttackRoll.init(
+        actualRoll.publicKey,
+        actualRoll.cipherText,
+        sig
+      );
+      diceRolls.ciphertext = fakeRoll.cipherText; // trying to be sneaky
+
+      const attackDistance = 20;
+
+      expect(() => {
+        Circuit.runAndCheck(() => {
+          initialPhaseState.applyRangedAttackAction(
+            attack1,
+            attack1.sign(player1PrivateKey),
+            attackingPiece.clone(),
+            targetPiece1.clone(),
+            piecesTree.getWitness(attackingPiece.id.toBigInt()),
+            piecesTree.getWitness(targetPiece1.id.toBigInt()),
+            UInt32.from(attackDistance),
+            diceRolls,
+            serverPrivateKey
+          );
+        });
+      }).toThrow();
     });
   });
 });
