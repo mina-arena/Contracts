@@ -9,6 +9,10 @@ export class PieceCondition extends Struct({
   rangedWoundRoll: UInt32,
   rangedSaveRoll: UInt32,
   rangedDamage: UInt32,
+  meleeHitRoll: UInt32,
+  meleeWoundRoll: UInt32,
+  meleeSaveRoll: UInt32,
+  meleeDamage: UInt32,
 }) {
   hash(): Field {
     return Poseidon.hash([
@@ -19,6 +23,10 @@ export class PieceCondition extends Struct({
       this.rangedWoundRoll.value,
       this.rangedSaveRoll.value,
       this.rangedDamage.value,
+      this.meleeHitRoll.value,
+      this.meleeWoundRoll.value,
+      this.meleeSaveRoll.value,
+      this.meleeDamage.value,
     ]);
   }
 }

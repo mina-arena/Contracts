@@ -17,6 +17,10 @@ export class Unit extends Struct({
         rangedWoundRoll: UInt32.from(2),
         rangedSaveRoll: UInt32.from(6),
         rangedDamage: UInt32.from(2),
+        meleeHitRoll: UInt32.from(1),
+        meleeWoundRoll: UInt32.from(2),
+        meleeSaveRoll: UInt32.from(6),
+        meleeDamage: UInt32.from(3),
       }),
     });
   }

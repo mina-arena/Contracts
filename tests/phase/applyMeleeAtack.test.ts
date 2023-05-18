@@ -36,7 +36,7 @@ describe('PhaseState', () => {
     arenaTree = new ArenaMerkleTree();
   });
 
-  describe('applyRangedAttack', () => {
+  describe('applyMeleeAttack', () => {
     let attackingPiecePosition: Position;
     let targetPiece1Position: Position;
     let targetPiece2Position: Position;
@@ -48,8 +48,8 @@ describe('PhaseState', () => {
     let diceRolls: EncrytpedAttackRoll;
     beforeEach(async () => {
       attackingPiecePosition = Position.fromXY(100, 100);
-      targetPiece1Position = Position.fromXY(100, 120); // in range
-      targetPiece2Position = Position.fromXY(100, 200); // out of range
+      targetPiece1Position = Position.fromXY(100, 102); // in range
+      targetPiece2Position = Position.fromXY(100, 110); // out of range
 
       attackingPiece = new Piece(
         Field(1),
@@ -57,7 +57,7 @@ describe('PhaseState', () => {
         attackingPiecePosition,
         Unit.default()
       );
-      attackingPiece.condition.rangedSaveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
+      attackingPiece.condition.meleeSaveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
       targetPiece1 = new Piece(
         Field(2),
         player2PrivateKey.toPublicKey(),
@@ -94,8 +94,8 @@ describe('PhaseState', () => {
         player1PrivateKey.toPublicKey()
       );
 
-      attack1 = new Action(Field(1), Field(1), targetPiece1.hash(), Field(1));
-      attack2 = new Action(Field(1), Field(1), targetPiece2.hash(), Field(1));
+      attack1 = new Action(Field(1), Field(2), targetPiece1.hash(), Field(1));
+      attack2 = new Action(Field(1), Field(2), targetPiece2.hash(), Field(1));
     });
 
     it('hits, wounds, doesnt save, is in range', async () => {
@@ -107,10 +107,10 @@ describe('PhaseState', () => {
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
-      const attackDistance = 20;
+      const attackDistance = 2;
 
       Circuit.runAndCheck(() => {
-        const newPhaseState = initialPhaseState.applyRangedAttackAction(
+        const newPhaseState = initialPhaseState.applyMeleeAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
           attackingPiece.clone(),
@@ -123,7 +123,7 @@ describe('PhaseState', () => {
         );
 
         const targetAfterAttack = targetPiece1.clone();
-        targetAfterAttack.condition.health = UInt32.from(1); // took 2 damage
+        targetAfterAttack.condition.health = UInt32.from(0); // took 3 damage
         piecesTree.set(
           targetAfterAttack.id.toBigInt(),
           targetAfterAttack.hash()
@@ -149,10 +149,10 @@ describe('PhaseState', () => {
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
-      const attackDistance = 20;
+      const attackDistance = 2;
 
       Circuit.runAndCheck(() => {
-        const newPhaseState = initialPhaseState.applyRangedAttackAction(
+        const newPhaseState = initialPhaseState.applyMeleeAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
           attackingPiece.clone(),
@@ -191,10 +191,10 @@ describe('PhaseState', () => {
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
-      const attackDistance = 20;
+      const attackDistance = 2;
 
       Circuit.runAndCheck(() => {
-        const newPhaseState = initialPhaseState.applyRangedAttackAction(
+        const newPhaseState = initialPhaseState.applyMeleeAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
           attackingPiece.clone(),
@@ -232,11 +232,11 @@ describe('PhaseState', () => {
       const sig = Signature.create(rngPrivateKey, enc.cipherText);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
-      const attackDistance = 100;
+      const attackDistance = 10;
 
       expect(() => {
         Circuit.runAndCheck(() => {
-          initialPhaseState.applyRangedAttackAction(
+          initialPhaseState.applyMeleeAttackAction(
             attack2,
             attack2.sign(player1PrivateKey),
             attackingPiece.clone(),
@@ -287,11 +287,11 @@ describe('PhaseState', () => {
       );
       diceRolls.ciphertext = fakeRoll.cipherText; // trying to be sneaky
 
-      const attackDistance = 20;
+      const attackDistance = 2;
 
       expect(() => {
         Circuit.runAndCheck(() => {
-          initialPhaseState.applyRangedAttackAction(
+          initialPhaseState.applyMeleeAttackAction(
             attack1,
             attack1.sign(player1PrivateKey),
             attackingPiece.clone(),
