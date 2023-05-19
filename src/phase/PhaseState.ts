@@ -7,6 +7,7 @@ import {
   PrivateKey,
   Circuit,
   Bool,
+  Poseidon,
 } from 'snarkyjs';
 
 import { Piece } from '../objects/Piece';
@@ -60,6 +61,23 @@ export class PhaseState extends Struct({
       startingArenaState,
       playerPublicKey
     );
+  }
+
+  hash(): Field {
+    return Poseidon.hash([
+      this.nonce,
+      this.actionsNonce,
+      this.startingPiecesState,
+      this.currentPiecesState,
+      this.startingArenaState,
+      this.currentArenaState,
+      this.playerPublicKey.x,
+      this.playerPublicKey.isOdd.toField(),
+    ]);
+  }
+
+  assertEquals(other: PhaseState) {
+    this.hash().assertEquals(other.hash());
   }
 
   applyMoveAction(
