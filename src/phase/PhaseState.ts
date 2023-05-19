@@ -119,7 +119,7 @@ export class PhaseState extends Struct({
     oldAroot = oldPositionArenaWitness.calculateRoot(Field(1));
     oldAkey = oldPositionArenaWitness.calculateIndex();
     oldAroot.assertEquals(this.currentArenaState);
-    oldAkey.assertEquals(Field(piece.position.getMerkleKey(800)));
+    oldAkey.assertEquals(piece.position.getMerkleKey(800));
 
     // Old Witness, new position is un-occupied
     midAroot = newPositionArenaWitness.calculateRoot(Field(0));
@@ -127,7 +127,7 @@ export class PhaseState extends Struct({
     // assert that the mid tree with new position un-occupied == the old tree with the old position un-occupied
     // e.g. every other leaf must be the same; they are the same tree outside of these 2 leaves
     midAroot.assertEquals(oldPositionArenaWitness.calculateRoot(Field(0)));
-    newAkey.assertEquals(Field(newPosition.getMerkleKey(800)));
+    newAkey.assertEquals(newPosition.getMerkleKey(800));
 
     // calculate new tree root based on the new position being occupied, this is the new root of the arena
     newAroot = newPositionArenaWitness.calculateRoot(Field(1));

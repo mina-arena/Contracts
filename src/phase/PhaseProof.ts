@@ -1,4 +1,4 @@
-import { Circuit, Experimental, SelfProof, Signature, UInt32 } from 'snarkyjs';
+import { Experimental, SelfProof, Signature, UInt32 } from 'snarkyjs';
 import { PhaseState } from './PhaseState';
 import { Piece } from '../objects/Piece';
 import { Action } from '../objects/Action';
