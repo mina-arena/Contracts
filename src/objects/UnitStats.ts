@@ -6,11 +6,10 @@ export class UnitStats extends Struct({
   rangedAttackRange: UInt32,
   rangedHitRoll: UInt32,
   rangedWoundRoll: UInt32,
-  rangedSaveRoll: UInt32,
+  saveRoll: UInt32,
   rangedDamage: UInt32,
   meleeHitRoll: UInt32,
   meleeWoundRoll: UInt32,
-  meleeSaveRoll: UInt32,
   meleeDamage: UInt32,
 }) {
   hash(): Field {
@@ -20,11 +19,10 @@ export class UnitStats extends Struct({
       this.rangedAttackRange.value,
       this.rangedHitRoll.value,
       this.rangedWoundRoll.value,
-      this.rangedSaveRoll.value,
+      this.saveRoll.value,
       this.rangedDamage.value,
       this.meleeHitRoll.value,
       this.meleeWoundRoll.value,
-      this.meleeSaveRoll.value,
       this.meleeDamage.value,
     ]);
   }

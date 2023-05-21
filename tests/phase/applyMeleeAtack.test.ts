@@ -57,7 +57,7 @@ describe('PhaseState', () => {
         attackingPiecePosition,
         Unit.default()
       );
-      attackingPiece.condition.meleeSaveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
+      attackingPiece.condition.saveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
       targetPiece1 = new Piece(
         Field(2),
         player2PrivateKey.toPublicKey(),
