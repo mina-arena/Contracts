@@ -1,11 +1,22 @@
-import { Field, Struct, Signature, PublicKey, UInt32 } from 'snarkyjs';
+import {
+  Field,
+  Struct,
+  Signature,
+  PublicKey,
+  UInt32,
+  PrivateKey,
+  Circuit,
+  Bool,
+  Poseidon,
+} from 'snarkyjs';
 
-import { GameState } from '../game/GameState';
 import { Piece } from '../objects/Piece';
 import { Position } from '../objects/Position';
 import { Action } from '../objects/Action';
 import { ArenaMerkleWitness } from '../objects/ArenaMerkleTree';
 import { PiecesMerkleWitness } from '../objects/PiecesMerkleTree';
+import { EncrytpedAttackRoll } from '../objects/AttackDiceRolls';
+import { MELEE_ATTACK_RANGE } from '../gameplay_constants';
 
 export class PhaseState extends Struct({
   nonce: Field,
@@ -52,6 +63,23 @@ export class PhaseState extends Struct({
     );
   }
 
+  hash(): Field {
+    return Poseidon.hash([
+      this.nonce,
+      this.actionsNonce,
+      this.startingPiecesState,
+      this.currentPiecesState,
+      this.startingArenaState,
+      this.currentArenaState,
+      this.playerPublicKey.x,
+      this.playerPublicKey.isOdd.toField(),
+    ]);
+  }
+
+  assertEquals(other: PhaseState) {
+    this.hash().assertEquals(other.hash());
+  }
+
   applyMoveAction(
     action: Action,
     actionSignature: Signature,
@@ -91,7 +119,7 @@ export class PhaseState extends Struct({
     oldAroot = oldPositionArenaWitness.calculateRoot(Field(1));
     oldAkey = oldPositionArenaWitness.calculateIndex();
     oldAroot.assertEquals(this.currentArenaState);
-    oldAkey.assertEquals(Field(piece.position.getMerkleKey(800)));
+    oldAkey.assertEquals(piece.position.getMerkleKey(800));
 
     // Old Witness, new position is un-occupied
     midAroot = newPositionArenaWitness.calculateRoot(Field(0));
@@ -99,7 +127,7 @@ export class PhaseState extends Struct({
     // assert that the mid tree with new position un-occupied == the old tree with the old position un-occupied
     // e.g. every other leaf must be the same; they are the same tree outside of these 2 leaves
     midAroot.assertEquals(oldPositionArenaWitness.calculateRoot(Field(0)));
-    newAkey.assertEquals(Field(newPosition.getMerkleKey(800)));
+    newAkey.assertEquals(newPosition.getMerkleKey(800));
 
     // calculate new tree root based on the new position being occupied, this is the new root of the arena
     newAroot = newPositionArenaWitness.calculateRoot(Field(1));
@@ -115,6 +143,212 @@ export class PhaseState extends Struct({
       proot,
       this.startingArenaState,
       newAroot,
+      this.playerPublicKey
+    );
+  }
+
+  applyRangedAttackAction(
+    action: Action,
+    actionSignature: Signature,
+    attackingPiece: Piece,
+    targetPiece: Piece,
+    attackingPieceWitness: PiecesMerkleWitness,
+    targetPieceWitness: PiecesMerkleWitness,
+    assertedAttackDistance: UInt32,
+    attackRoll: EncrytpedAttackRoll,
+    serverSecretKey: PrivateKey
+  ): PhaseState {
+    const piecesRoot = attackingPieceWitness.calculateRoot(
+      attackingPiece.hash()
+    );
+    piecesRoot.assertEquals(
+      targetPieceWitness.calculateRoot(targetPiece.hash()),
+      'Piece witnesses do not match each other'
+    );
+    piecesRoot.assertEquals(
+      this.currentPiecesState,
+      'Piece witnesses do not match the current game state'
+    );
+    this.playerPublicKey.assertEquals(attackingPiece.playerPublicKey);
+    attackingPiece.position
+      .verifyDistance(targetPiece.position, assertedAttackDistance)
+      .assertTrue('Asserted attack distance is not correct');
+    assertedAttackDistance.assertLessThanOrEqual(
+      attackingPiece.condition.rangedAttackRange,
+      'Asserted attack distance is out of range for attacking piece'
+    );
+    const v = actionSignature.verify(
+      this.playerPublicKey,
+      action.signatureArguments()
+    );
+    v.assertTrue('The action signature does not match the provided action');
+
+    action.nonce.assertGreaterThan(
+      this.actionsNonce,
+      'The action nonce is LTE the most recent action nonce'
+    );
+    action.actionType.assertEquals(
+      Field(1),
+      'Action type must be 1 (ranged attack)'
+    ); // action is a "ranged attack" action
+    action.actionParams.assertEquals(
+      targetPiece.hash(),
+      'The action target is different than the proved target piece'
+    );
+
+    const decrytpedRolls = attackRoll.decryptRoll(serverSecretKey);
+    // roll for hit
+    const hit = Circuit.if(
+      decrytpedRolls.hit.greaterThanOrEqual(
+        attackingPiece.condition.rangedHitRoll.value
+      ),
+      Bool(true),
+      Bool(false)
+    );
+
+    // roll for wound
+    const wound = Circuit.if(
+      decrytpedRolls.wound.greaterThanOrEqual(
+        attackingPiece.condition.rangedWoundRoll.value
+      ),
+      Bool(true),
+      Bool(false)
+    );
+
+    // roll for save
+    const notSave = Circuit.if(
+      decrytpedRolls.save.greaterThanOrEqual(
+        targetPiece.condition.saveRoll.value
+      ),
+      Bool(false),
+      Bool(true)
+    );
+
+    let healthDiff = Circuit.if(
+      Bool.and(Bool.and(hit, wound), notSave),
+      attackingPiece.condition.rangedDamage,
+      UInt32.from(0)
+    );
+
+    const newHealth = Circuit.if(
+      healthDiff.greaterThanOrEqual(targetPiece.condition.health),
+      UInt32.from(0),
+      targetPiece.condition.health.sub(healthDiff)
+    );
+
+    targetPiece.condition.health = newHealth;
+    const newPiecesRoot = targetPieceWitness.calculateRoot(targetPiece.hash());
+
+    return new PhaseState(
+      this.nonce,
+      action.nonce,
+      this.startingPiecesState,
+      newPiecesRoot,
+      this.startingArenaState,
+      this.currentArenaState,
+      this.playerPublicKey
+    );
+  }
+
+  applyMeleeAttackAction(
+    action: Action,
+    actionSignature: Signature,
+    attackingPiece: Piece,
+    targetPiece: Piece,
+    attackingPieceWitness: PiecesMerkleWitness,
+    targetPieceWitness: PiecesMerkleWitness,
+    assertedAttackDistance: UInt32,
+    attackRoll: EncrytpedAttackRoll,
+    serverSecretKey: PrivateKey
+  ): PhaseState {
+    const piecesRoot = attackingPieceWitness.calculateRoot(
+      attackingPiece.hash()
+    );
+    piecesRoot.assertEquals(
+      targetPieceWitness.calculateRoot(targetPiece.hash()),
+      'Piece witnesses do not match each other'
+    );
+    piecesRoot.assertEquals(
+      this.currentPiecesState,
+      'Piece witnesses do not match the current game state'
+    );
+    this.playerPublicKey.assertEquals(attackingPiece.playerPublicKey);
+    attackingPiece.position
+      .verifyDistance(targetPiece.position, assertedAttackDistance)
+      .assertTrue('Asserted attack distance is not correct');
+    assertedAttackDistance.assertLessThanOrEqual(
+      MELEE_ATTACK_RANGE,
+      'Asserted attack distance is out of melee range'
+    );
+    const v = actionSignature.verify(
+      this.playerPublicKey,
+      action.signatureArguments()
+    );
+    v.assertTrue('The action signature does not match the provided action');
+
+    action.nonce.assertGreaterThan(
+      this.actionsNonce,
+      'The action nonce is LTE the most recent action nonce'
+    );
+    action.actionType.assertEquals(
+      Field(2),
+      'Action type must be 2 (melee attack)'
+    ); // action is a "ranged attack" action
+    action.actionParams.assertEquals(
+      targetPiece.hash(),
+      'The action target is different than the proved target piece'
+    );
+
+    const decrytpedRolls = attackRoll.decryptRoll(serverSecretKey);
+    // roll for hit
+    const hit = Circuit.if(
+      decrytpedRolls.hit.greaterThanOrEqual(
+        attackingPiece.condition.meleeHitRoll.value
+      ),
+      Bool(true),
+      Bool(false)
+    );
+
+    // roll for wound
+    const wound = Circuit.if(
+      decrytpedRolls.wound.greaterThanOrEqual(
+        attackingPiece.condition.meleeWoundRoll.value
+      ),
+      Bool(true),
+      Bool(false)
+    );
+
+    // roll for save
+    const notSave = Circuit.if(
+      decrytpedRolls.save.greaterThanOrEqual(
+        targetPiece.condition.saveRoll.value
+      ),
+      Bool(false),
+      Bool(true)
+    );
+
+    let healthDiff = Circuit.if(
+      Bool.and(Bool.and(hit, wound), notSave),
+      attackingPiece.condition.meleeDamage,
+      UInt32.from(0)
+    );
+
+    const newHealth = Circuit.if(
+      healthDiff.greaterThanOrEqual(targetPiece.condition.health),
+      UInt32.from(0),
+      targetPiece.condition.health.sub(healthDiff)
+    );
+
+    targetPiece.condition.health = newHealth;
+    const newPiecesRoot = targetPieceWitness.calculateRoot(targetPiece.hash());
+
+    return new PhaseState(
+      this.nonce,
+      action.nonce,
+      this.startingPiecesState,
+      newPiecesRoot,
+      this.startingArenaState,
+      this.currentArenaState,
       this.playerPublicKey
     );
   }
