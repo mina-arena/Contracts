@@ -218,7 +218,7 @@ export class PhaseState extends Struct({
     // roll for save
     const notSave = Circuit.if(
       decrytpedRolls.save.greaterThanOrEqual(
-        targetPiece.condition.rangedSaveRoll.value
+        targetPiece.condition.saveRoll.value
       ),
       Bool(false),
       Bool(true)
@@ -321,7 +321,7 @@ export class PhaseState extends Struct({
     // roll for save
     const notSave = Circuit.if(
       decrytpedRolls.save.greaterThanOrEqual(
-        targetPiece.condition.meleeSaveRoll.value
+        targetPiece.condition.saveRoll.value
       ),
       Bool(false),
       Bool(true)
