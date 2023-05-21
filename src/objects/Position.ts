@@ -15,9 +15,9 @@ export class Position extends Struct({
     return Poseidon.hash(this.x.toFields().concat(this.y.toFields()));
   }
 
-  getMerkleKey(arenaWidth: number): bigint {
+  getMerkleKey(arenaWidth: number): Field {
     const rowIdx = this.y.mul(arenaWidth);
-    return rowIdx.add(this.x).toBigint();
+    return rowIdx.add(this.x).value;
   }
 
   verifyDistance(other: Position, assertedDistance: UInt32): Bool {
