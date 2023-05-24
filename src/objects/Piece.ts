@@ -46,4 +46,17 @@ export class Piece extends Struct({
       this.condition
     );
   }
+
+  toJSON(): string {
+    return JSON.stringify({
+      id: this.id.toString(),
+      playerPublicKey: this.playerPublicKey.toBase58(),
+      position: {
+        x: this.position.x.toString(),
+        y: this.position.y.toString(),
+      },
+      baseUnit: this.baseUnit.toJSON(),
+      condition: this.condition.toJSON(),
+    });
+  }
 }

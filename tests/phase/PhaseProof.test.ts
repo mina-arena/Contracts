@@ -125,7 +125,7 @@ describe('PhaseProof', () => {
       const pieceMapAfterMove = piecesTree.clone();
       const pieceClone = piece.clone();
       pieceClone.position = newPosition;
-      pieceMapAfterMove.tree.setLeaf(1n, pieceClone.hash());
+      pieceMapAfterMove.set(1n, pieceClone.hash());
       const finalArenaTree = arenaTreeBothUnoccupied.clone();
       finalArenaTree.set(100, 65, Field(1));
 
@@ -186,12 +186,9 @@ describe('PhaseProof', () => {
     let arenaTree: ArenaMerkleTree;
     let attackingPiecePosition: Position;
     let targetPiece1Position: Position;
-    let targetPiece2Position: Position;
     let attackingPiece: Piece;
     let targetPiece1: Piece;
-    let targetPiece2: Piece;
     let attack1: Action;
-    let attack2: Action;
     let diceRolls: EncrytpedAttackRoll;
     beforeEach(async () => {
       console.time('applyRangedAttackSetup');
@@ -202,7 +199,6 @@ describe('PhaseProof', () => {
       arenaTree = new ArenaMerkleTree();
       attackingPiecePosition = Position.fromXY(100, 100);
       targetPiece1Position = Position.fromXY(100, 120); // in range
-      targetPiece2Position = Position.fromXY(100, 200); // out of range
 
       attackingPiece = new Piece(
         Field(1),
@@ -217,15 +213,8 @@ describe('PhaseProof', () => {
         targetPiece1Position,
         Unit.default()
       );
-      targetPiece2 = new Piece(
-        Field(3),
-        player2PrivateKey.toPublicKey(),
-        targetPiece2Position,
-        Unit.default()
-      );
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
-      piecesTree.set(targetPiece2.id.toBigInt(), targetPiece2.hash());
       gameState = new GameState({
         piecesRoot: piecesTree.tree.getRoot(),
         arenaRoot: arenaTree.tree.getRoot(),
@@ -248,7 +237,6 @@ describe('PhaseProof', () => {
       );
 
       attack1 = new Action(Field(1), Field(1), targetPiece1.hash(), Field(1));
-      attack2 = new Action(Field(1), Field(1), targetPiece2.hash(), Field(1));
       console.timeEnd('applyRangedAttackSetup');
     });
 
@@ -261,7 +249,6 @@ describe('PhaseProof', () => {
       const sig = Signature.create(rngPrivateKey, enc.cipherText);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
-      const piecesTreeBefore = piecesTree.clone();
       const attackDistance = 20;
 
       const initialProof = await PhaseProgram.init(
@@ -290,6 +277,19 @@ describe('PhaseProof', () => {
         `initial phase state: ${initialPhaseState.hash().toString()}`
       );
       Circuit.log(`final phase state: ${finalPhaseState.hash().toString()}`);
+
+      Circuit.log('attacking piece', attackingPiece.clone().toJSON());
+      Circuit.log('target piece', targetPiece1.clone().toJSON());
+      Circuit.log(
+        'attacking piece (witness)',
+        piecesTree.tree
+          .getNode(0, attackingPiece.clone().id.toBigInt())
+          .toJSON()
+      );
+      Circuit.log(
+        'target piece (witness)',
+        piecesTree.tree.getNode(0, targetPiece1.clone().id.toBigInt()).toJSON()
+      );
 
       console.time('applyRangedAttackProof');
       const afterAttackProof = await PhaseProgram.applyRangedAttack(
@@ -333,10 +333,8 @@ describe('PhaseProof', () => {
     let arenaTree: ArenaMerkleTree;
     let attackingPiecePosition: Position;
     let targetPiece1Position: Position;
-    let targetPiece2Position: Position;
     let attackingPiece: Piece;
     let targetPiece1: Piece;
-    let targetPiece2: Piece;
     let attack1: Action;
     let diceRolls: EncrytpedAttackRoll;
 
@@ -365,7 +363,6 @@ describe('PhaseProof', () => {
       );
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
-      piecesTree.set(targetPiece2.id.toBigInt(), targetPiece2.hash());
       gameState = new GameState({
         piecesRoot: piecesTree.tree.getRoot(),
         arenaRoot: arenaTree.tree.getRoot(),
@@ -400,7 +397,7 @@ describe('PhaseProof', () => {
       const sig = Signature.create(rngPrivateKey, enc.cipherText);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
-      const attackDistance = 20;
+      const attackDistance = 1;
 
       const initialProof = await PhaseProgram.init(
         initialPhaseState,

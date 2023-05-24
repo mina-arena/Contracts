@@ -26,4 +26,19 @@ export class UnitStats extends Struct({
       this.meleeDamage.value,
     ]);
   }
+
+  toJSON(): string {
+    return JSON.stringify({
+      health: this.health.toString(),
+      movement: this.movement.toString(),
+      rangedAttackRange: this.rangedAttackRange.toString(),
+      rangedHitRoll: this.rangedHitRoll.toString(),
+      rangedWoundRoll: this.rangedWoundRoll.toString(),
+      saveRoll: this.saveRoll.toString(),
+      rangedDamage: this.rangedDamage.toString(),
+      meleeHitRoll: this.meleeHitRoll.toString(),
+      meleeWoundRoll: this.meleeWoundRoll.toString(),
+      meleeDamage: this.meleeDamage.toString(),
+    });
+  }
 }
