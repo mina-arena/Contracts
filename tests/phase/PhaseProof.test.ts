@@ -258,6 +258,7 @@ describe('PhaseProof', () => {
 
       // actually apply the ranged attack to the merkle maps
       const pieceMapAfterAttack = piecesTree.clone();
+      console.log(pieceMapAfterAttack.obj);
       const pieceClone = targetPiece1.clone();
       pieceClone.condition.health = UInt32.from(1);
       pieceMapAfterAttack.set(pieceClone.id.toBigInt(), pieceClone.hash());
@@ -277,20 +278,6 @@ describe('PhaseProof', () => {
         `initial phase state: ${initialPhaseState.hash().toString()}`
       );
       Circuit.log(`final phase state: ${finalPhaseState.hash().toString()}`);
-
-      Circuit.log('attacking piece', attackingPiece.clone().toJSON());
-      Circuit.log('target piece', targetPiece1.clone().toJSON());
-      Circuit.log(
-        'attacking piece (witness)',
-        piecesTree.tree
-          .getNode(0, attackingPiece.clone().id.toBigInt())
-          .toJSON()
-      );
-      Circuit.log(
-        'target piece (witness)',
-        piecesTree.tree.getNode(0, targetPiece1.clone().id.toBigInt()).toJSON()
-      );
-
       console.time('applyRangedAttackProof');
       const afterAttackProof = await PhaseProgram.applyRangedAttack(
         finalPhaseState,
@@ -305,8 +292,6 @@ describe('PhaseProof', () => {
         diceRolls,
         serverPrivateKey
       );
-      console.timeEnd('applyRangedAttackProof');
-
       Circuit.log('finished with proof');
       Circuit.log(
         `Proof state: ${afterAttackProof.publicInput.hash().toString()}`

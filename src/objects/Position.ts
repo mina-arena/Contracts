@@ -11,6 +11,13 @@ export class Position extends Struct({
     });
   }
 
+  clone(): Position {
+    return new Position({
+      x: UInt32.from(this.x),
+      y: UInt32.from(this.y),
+    });
+  }
+
   hash(): Field {
     return Poseidon.hash(this.x.toFields().concat(this.y.toFields()));
   }
