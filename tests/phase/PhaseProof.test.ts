@@ -39,7 +39,7 @@ describe('PhaseProof', () => {
     console.timeEnd('compile');
   });
 
-  describe.skip('Applies Move', () => {
+  describe('Applies Move', () => {
     let oldPosition: Position;
     let newPosition: Position;
     let piece: Piece;
@@ -305,7 +305,7 @@ describe('PhaseProof', () => {
     });
   });
 
-  describe.skip('Applies Melee Attack', () => {
+  describe('Applies Melee Attack', () => {
     let player1PrivateKey: PrivateKey;
     let player2PrivateKey: PrivateKey;
     let serverPrivateKey: PrivateKey;
@@ -402,7 +402,7 @@ describe('PhaseProof', () => {
         initialPhaseState.startingPiecesState,
         pieceMapAfterAttack.tree.getRoot(),
         initialPhaseState.startingArenaState,
-        initialPhaseState.startingArenaState,
+        initialPhaseState.currentArenaState,
         initialPhaseState.playerPublicKey
       );
 
