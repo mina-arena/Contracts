@@ -373,7 +373,7 @@ describe('PhaseProof', () => {
       console.timeEnd('applyMeleeAttackSetup');
     });
 
-    it('Creates Valid Proof after applying a ranged attack', async () => {
+    it('Creates Valid Proof after applying a melee attack', async () => {
       console.time('applyMeleeAttack');
       const enc = Encryption.encrypt(
         [Field(6), Field(6), Field(1)],
@@ -392,7 +392,7 @@ describe('PhaseProof', () => {
       // actually apply the ranged attack to the merkle maps
       const pieceMapAfterAttack = piecesTree.clone();
       const pieceClone = targetPiece1.clone();
-      pieceClone.condition.health = UInt32.from(1);
+      pieceClone.condition.health = UInt32.from(0);
       pieceMapAfterAttack.set(pieceClone.id.toBigInt(), pieceClone.hash());
 
       // the state that the phase should have after the move
