@@ -1,8 +1,8 @@
 import { Field, Struct, Poseidon, PublicKey } from 'snarkyjs';
 
-import { Unit } from './Unit';
-import { Position } from './Position';
-import { PieceCondition } from './PieceCondition';
+import { Unit } from './Unit.js';
+import { Position } from './Position.js';
+import { PieceCondition } from './PieceCondition.js';
 
 export class Piece extends Struct({
   id: Field,

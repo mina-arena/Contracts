@@ -1,26 +1,29 @@
-import { PhaseState } from './phase/PhaseState';
-import { TurnState } from './turn/TurnState';
-import { GameState } from './game/GameState';
+import { PhaseState } from './phase/PhaseState.js';
+import { TurnState } from './turn/TurnState.js';
+import { GameState } from './game/GameState.js';
 import {
   PiecesMerkleWitness,
   PiecesMerkleTree,
-} from './objects/PiecesMerkleTree';
-import { ArenaMerkleWitness, ArenaMerkleTree } from './objects/ArenaMerkleTree';
-import { Action } from './objects/Action';
-import { Unit } from './objects/Unit';
-import { Piece } from './objects/Piece';
-import { Position } from './objects/Position';
-import { PieceCondition } from './objects/PieceCondition';
-import { UnitStats } from './objects/UnitStats';
+} from './objects/PiecesMerkleTree.js';
+import {
+  ArenaMerkleWitness,
+  ArenaMerkleTree,
+} from './objects/ArenaMerkleTree.js';
+import { Action } from './objects/Action.js';
+import { Unit } from './objects/Unit.js';
+import { Piece } from './objects/Piece.js';
+import { Position } from './objects/Position.js';
+import { PieceCondition } from './objects/PieceCondition.js';
+import { UnitStats } from './objects/UnitStats.js';
 import {
   DecrytpedAttackRoll,
   EncrytpedAttackRoll,
-} from './objects/AttackDiceRolls';
-import { PhaseProgram, PhaseProof } from './phase/PhaseProof';
+} from './objects/AttackDiceRolls.js';
+import { PhaseProgram, PhaseProof } from './phase/PhaseProof.js';
 import {
   MELEE_ATTACK_RANGE,
   MELEE_ATTACK_RANGE_U32,
-} from './gameplay_constants';
+} from './gameplay_constants.js';
 
 export {
   PhaseState,
