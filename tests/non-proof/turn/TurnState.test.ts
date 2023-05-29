@@ -1,12 +1,12 @@
 import { PrivateKey, Field, Poseidon, Bool } from 'snarkyjs';
 
-import { GameState } from '../../src/game/GameState';
-import { Action } from '../../src/objects/Action';
-import { Position } from '../../src/objects/Position';
-import { Piece } from '../../src/objects/Piece';
-import { Unit } from '../../src/objects/Unit';
-import { TurnState } from '../../src/turn/TurnState';
-import { PhaseState } from '../../src/phase/PhaseState';
+import { GameState } from '../../../src/game/GameState';
+import { Action } from '../../../src/objects/Action';
+import { Position } from '../../../src/objects/Position';
+import { Piece } from '../../../src/objects/Piece';
+import { Unit } from '../../../src/objects/Unit';
+import { TurnState } from '../../../src/turn/TurnState';
+import { PhaseState } from '../../../src/phase/PhaseState';
 
 describe('TurnState', () => {
   let player1PrivateKey: PrivateKey;

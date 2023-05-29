@@ -16,6 +16,11 @@ import {
   DecrytpedAttackRoll,
   EncrytpedAttackRoll,
 } from './objects/AttackDiceRolls';
+import { PhaseProgram, PhaseProof } from './phase/PhaseProof';
+import {
+  MELEE_ATTACK_RANGE,
+  MELEE_ATTACK_RANGE_U32,
+} from './gameplay_constants';
 
 export {
   PhaseState,
@@ -33,4 +38,8 @@ export {
   UnitStats,
   DecrytpedAttackRoll,
   EncrytpedAttackRoll,
+  PhaseProgram,
+  PhaseProof,
+  MELEE_ATTACK_RANGE,
+  MELEE_ATTACK_RANGE_U32,
 };

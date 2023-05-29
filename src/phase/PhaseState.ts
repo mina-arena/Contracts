@@ -16,7 +16,7 @@ import { Action } from '../objects/Action';
 import { ArenaMerkleWitness } from '../objects/ArenaMerkleTree';
 import { PiecesMerkleWitness } from '../objects/PiecesMerkleTree';
 import { EncrytpedAttackRoll } from '../objects/AttackDiceRolls';
-import { MELEE_ATTACK_RANGE } from '../gameplay_constants';
+import { MELEE_ATTACK_RANGE_U32 } from '../gameplay_constants';
 
 export class PhaseState extends Struct({
   nonce: Field,
@@ -277,7 +277,7 @@ export class PhaseState extends Struct({
       .verifyDistance(targetPiece.position, assertedAttackDistance)
       .assertTrue('Asserted attack distance is not correct');
     assertedAttackDistance.assertLessThanOrEqual(
-      MELEE_ATTACK_RANGE,
+      MELEE_ATTACK_RANGE_U32,
       'Asserted attack distance is out of melee range'
     );
     const v = actionSignature.verify(

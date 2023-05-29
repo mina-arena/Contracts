@@ -1,13 +1,13 @@
 import { PrivateKey, Field, UInt32 } from 'snarkyjs';
 
-import { PhaseState } from '../../src/phase/PhaseState';
-import { GameState } from '../../src/game/GameState';
-import { Action } from '../../src/objects/Action';
-import { Position } from '../../src/objects/Position';
-import { Piece } from '../../src/objects/Piece';
-import { Unit } from '../../src/objects/Unit';
-import { ArenaMerkleTree } from '../../src/objects/ArenaMerkleTree';
-import { PiecesMerkleTree } from '../../src/objects/PiecesMerkleTree';
+import { PhaseState } from '../../../src/phase/PhaseState';
+import { GameState } from '../../../src/game/GameState';
+import { Action } from '../../../src/objects/Action';
+import { Position } from '../../../src/objects/Position';
+import { Piece } from '../../../src/objects/Piece';
+import { Unit } from '../../../src/objects/Unit';
+import { ArenaMerkleTree } from '../../../src/objects/ArenaMerkleTree';
+import { PiecesMerkleTree } from '../../../src/objects/PiecesMerkleTree';
 
 describe('PhaseState', () => {
   let player1PrivateKey: PrivateKey;

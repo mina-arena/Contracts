@@ -30,7 +30,7 @@ export const PhaseProgram = Experimental.ZkProgram({
       ],
       method(
         newState: PhaseState,
-        oldPhaseProof: SelfProof<PhaseState>,
+        oldPhaseProof: SelfProof<PhaseState, PhaseState>,
         action: Action,
         actionSignature: Signature,
         piece: Piece,

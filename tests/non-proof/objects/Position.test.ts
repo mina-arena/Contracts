@@ -1,6 +1,6 @@
 import { UInt32 } from 'snarkyjs';
 
-import { Position } from '../../src/objects/Position';
+import { Position } from '../../../src/objects/Position';
 
 describe('Position', () => {
   describe('getMerkleKey', () => {
