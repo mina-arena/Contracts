@@ -1,10 +1,6 @@
-import { Field, Struct, Signature, PublicKey } from 'snarkyjs';
+import { Field, Struct, PublicKey } from 'snarkyjs';
 
-import { GameState } from '../game/GameState';
-import { Piece } from '../objects/Piece';
-import { Position } from '../objects/Position';
-import { Action } from '../objects/Action';
-import { PhaseState } from '../phase/PhaseState';
+import { PhaseState } from '../phase/PhaseState.js';
 
 export class TurnState extends Struct({
   phaseNonce: Field, // nonce of phases processed so far

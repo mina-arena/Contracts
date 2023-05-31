@@ -7,15 +7,15 @@ import {
   Circuit,
 } from 'snarkyjs';
 
-import { PhaseState } from '../../src/phase/PhaseState';
-import { GameState } from '../../src/game/GameState';
-import { Action } from '../../src/objects/Action';
-import { Position } from '../../src/objects/Position';
-import { Piece } from '../../src/objects/Piece';
-import { Unit } from '../../src/objects/Unit';
-import { ArenaMerkleTree } from '../../src/objects/ArenaMerkleTree';
-import { PiecesMerkleTree } from '../../src/objects/PiecesMerkleTree';
-import { EncrytpedAttackRoll } from '../../src/objects/AttackDiceRolls';
+import { PhaseState } from '../../../src/phase/PhaseState';
+import { GameState } from '../../../src/game/GameState';
+import { Action } from '../../../src/objects/Action';
+import { Position } from '../../../src/objects/Position';
+import { Piece } from '../../../src/objects/Piece';
+import { Unit } from '../../../src/objects/Unit';
+import { ArenaMerkleTree } from '../../../src/objects/ArenaMerkleTree';
+import { PiecesMerkleTree } from '../../../src/objects/PiecesMerkleTree';
+import { EncrytpedAttackRoll } from '../../../src/objects/AttackDiceRolls';
 
 describe('PhaseState', () => {
   let player1PrivateKey: PrivateKey;
@@ -49,7 +49,7 @@ describe('PhaseState', () => {
     beforeEach(async () => {
       attackingPiecePosition = Position.fromXY(100, 100);
       targetPiece1Position = Position.fromXY(100, 102); // in range
-      targetPiece2Position = Position.fromXY(100, 110); // out of range
+      targetPiece2Position = Position.fromXY(100, 125); // out of range
 
       attackingPiece = new Piece(
         Field(1),
@@ -224,7 +224,7 @@ describe('PhaseState', () => {
       });
     });
 
-    it('is out range', async () => {
+    it('is out of range', async () => {
       const enc = Encryption.encrypt(
         [Field(6), Field(6), Field(6)],
         serverPrivateKey.toPublicKey()
@@ -232,7 +232,7 @@ describe('PhaseState', () => {
       const sig = Signature.create(rngPrivateKey, enc.cipherText);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
-      const attackDistance = 10;
+      const attackDistance = 25;
 
       expect(() => {
         Circuit.runAndCheck(() => {

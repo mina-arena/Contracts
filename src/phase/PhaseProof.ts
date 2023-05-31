@@ -37,7 +37,7 @@ export const PhaseProgram = Experimental.ZkProgram({
       ],
       method(
         newState: PhaseState,
-        oldPhaseProof: SelfProof<PhaseState>,
+        oldPhaseProof: SelfProof<PhaseState, PhaseState>,
         action: Action,
         actionSignature: Signature,
         piece: Piece,
@@ -76,7 +76,7 @@ export const PhaseProgram = Experimental.ZkProgram({
       ],
       method(
         newState: PhaseState,
-        oldPhaseProof: SelfProof<PhaseState>,
+        oldPhaseProof: SelfProof<PhaseState, PhaseState>,
         action: Action,
         actionSignature: Signature,
         attackingPiece: Piece,
@@ -118,7 +118,7 @@ export const PhaseProgram = Experimental.ZkProgram({
       ],
       method(
         newState: PhaseState,
-        oldPhaseProof: SelfProof<PhaseState>,
+        oldPhaseProof: SelfProof<PhaseState, PhaseState>,
         action: Action,
         actionSignature: Signature,
         attackingPiece: Piece,

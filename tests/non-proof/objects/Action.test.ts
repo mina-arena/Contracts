@@ -1,6 +1,6 @@
 import { PrivateKey, Field, Poseidon, Bool } from 'snarkyjs';
 
-import { Action } from '../../src/objects/Action';
+import { Action } from '../../../src/objects/Action';
 
 describe('Action', () => {
   it('signs data correctly', async () => {

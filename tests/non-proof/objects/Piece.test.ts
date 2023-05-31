@@ -1,10 +1,10 @@
 import { Field, Poseidon, PrivateKey, UInt32 } from 'snarkyjs';
 
-import { Piece } from '../../src/objects/Piece';
-import { Unit } from '../../src/objects/Unit';
-import { Position } from '../../src/objects/Position';
-import { PieceCondition } from '../../src/objects/PieceCondition';
-import { UnitStats } from '../../src/objects/UnitStats';
+import { Piece } from '../../../src/objects/Piece';
+import { Unit } from '../../../src/objects/Unit';
+import { Position } from '../../../src/objects/Position';
+import { PieceCondition } from '../../../src/objects/PieceCondition';
+import { UnitStats } from '../../../src/objects/UnitStats';
 
 describe('Piece', () => {
   describe('hash', () => {

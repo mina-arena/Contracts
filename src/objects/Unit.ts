@@ -1,6 +1,6 @@
 import { Field, Struct, Poseidon, UInt32 } from 'snarkyjs';
 
-import { UnitStats } from './UnitStats';
+import { UnitStats } from './UnitStats.js';
 
 // For now, a unit is just its stats
 // In the future, it can also have other metadata
