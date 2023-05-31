@@ -30,6 +30,7 @@ export class Piece extends Struct({
 
   hash(): Field {
     return Poseidon.hash([
+      this.id,
       Poseidon.hash(this.playerPublicKey.toFields()),
       this.position.hash(),
       this.baseUnit.hash(),
@@ -38,12 +39,30 @@ export class Piece extends Struct({
   }
 
   clone(): Piece {
+    const newId = Field(this.id);
+    const newPublicKey = this.playerPublicKey;
+    const newPosition = this.position.clone();
+    const newBaseUnit = this.baseUnit.clone();
+    const newCondition = this.condition.clone();
     return new Piece(
-      this.id,
-      this.playerPublicKey,
-      this.position,
-      this.baseUnit,
-      this.condition
+      newId,
+      newPublicKey,
+      newPosition,
+      newBaseUnit,
+      newCondition
     );
+  }
+
+  toJSON(): string {
+    return JSON.stringify({
+      id: this.id.toString(),
+      playerPublicKey: this.playerPublicKey.toBase58(),
+      position: {
+        x: this.position.x.toString(),
+        y: this.position.y.toString(),
+      },
+      baseUnit: this.baseUnit.toJSON(),
+      condition: this.condition.toJSON(),
+    });
   }
 }

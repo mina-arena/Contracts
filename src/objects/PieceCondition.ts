@@ -27,4 +27,34 @@ export class PieceCondition extends Struct({
       this.meleeDamage.value,
     ]);
   }
+
+  clone(): PieceCondition {
+    return new PieceCondition({
+      health: UInt32.from(this.health),
+      movement: UInt32.from(this.movement),
+      rangedAttackRange: UInt32.from(this.rangedAttackRange),
+      rangedHitRoll: UInt32.from(this.rangedHitRoll),
+      rangedWoundRoll: UInt32.from(this.rangedWoundRoll),
+      saveRoll: UInt32.from(this.saveRoll),
+      rangedDamage: UInt32.from(this.rangedDamage),
+      meleeHitRoll: UInt32.from(this.meleeHitRoll),
+      meleeWoundRoll: UInt32.from(this.meleeWoundRoll),
+      meleeDamage: UInt32.from(this.meleeDamage),
+    });
+  }
+
+  toJSON(): string {
+    return JSON.stringify({
+      health: this.health.toString(),
+      movement: this.movement.toString(),
+      rangedAttackRange: this.rangedAttackRange.toString(),
+      rangedHitRoll: this.rangedHitRoll.toString(),
+      rangedWoundRoll: this.rangedWoundRoll.toString(),
+      saveRoll: this.saveRoll.toString(),
+      rangedDamage: this.rangedDamage.toString(),
+      meleeHitRoll: this.meleeHitRoll.toString(),
+      meleeWoundRoll: this.meleeWoundRoll.toString(),
+      meleeDamage: this.meleeDamage.toString(),
+    });
+  }
 }

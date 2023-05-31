@@ -27,4 +27,16 @@ export class Unit extends Struct({
   hash(): Field {
     return Poseidon.hash([this.stats.hash()]);
   }
+
+  clone(): Unit {
+    return new Unit({
+      stats: this.stats.clone(),
+    });
+  }
+
+  toJSON(): string {
+    return JSON.stringify({
+      stats: this.stats.toJSON(),
+    });
+  }
 }

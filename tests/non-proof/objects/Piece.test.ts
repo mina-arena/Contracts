@@ -9,6 +9,7 @@ import { UnitStats } from '../../../src/objects/UnitStats';
 describe('Piece', () => {
   describe('hash', () => {
     it('returns the expected hash', async () => {
+      const pieceId = Field(7);
       const playerPublicKey = PrivateKey.random().toPublicKey();
       const stats = new UnitStats({
         health: UInt32.from(5),
@@ -25,10 +26,11 @@ describe('Piece', () => {
       const unit = new Unit({ stats });
       const pos = Position.fromXY(50, 51);
       const pieceCondition = new PieceCondition(stats);
-      const piece = new Piece(Field(7), playerPublicKey, pos, unit);
+      const piece = new Piece(pieceId, playerPublicKey, pos, unit);
 
       expect(piece.hash().toString()).toBe(
         Poseidon.hash([
+          pieceId,
           Poseidon.hash(playerPublicKey.toFields()),
           pos.hash(),
           unit.hash(),
@@ -52,12 +54,49 @@ describe('Piece', () => {
 
       expect(piece.hash().toString()).toBe(
         Poseidon.hash([
+          pieceId,
           Poseidon.hash(playerPublicKey.toFields()),
           pos.hash(),
           unit.hash(),
           updatedCondition.hash(),
         ]).toString()
       );
+    });
+  });
+
+  describe('clone', () => {
+    it('returns a new Piece with the same values', async () => {
+      const playerPublicKey = PrivateKey.random().toPublicKey();
+      const unit = Unit.default();
+      const pos = Position.fromXY(50, 51);
+      const piece = new Piece(Field(7), playerPublicKey, pos, unit);
+
+      const clone = piece.clone();
+
+      expect(clone.toJSON()).toBe(piece.toJSON());
+    });
+
+    it('can edit the clone without affecting the original', async () => {
+      const playerPublicKey = PrivateKey.random().toPublicKey();
+      const unit = Unit.default();
+      const pos = Position.fromXY(50, 51);
+      const piece = new Piece(Field(7), playerPublicKey, pos, unit);
+
+      let clone = piece.clone();
+      clone.position.x = clone.position.x.add(1);
+      expect(clone.toJSON()).not.toBe(piece.toJSON());
+
+      clone = piece.clone();
+      clone.condition.health = clone.condition.health.sub(1);
+      expect(clone.toJSON()).not.toBe(piece.toJSON());
+
+      clone = piece.clone();
+      clone.baseUnit.stats.health = clone.baseUnit.stats.health.sub(1);
+      expect(clone.toJSON()).not.toBe(piece.toJSON());
+
+      clone = piece.clone();
+      clone.playerPublicKey = PrivateKey.random().toPublicKey();
+      expect(clone.toJSON()).not.toBe(piece.toJSON());
     });
   });
 });
