@@ -150,7 +150,7 @@ describe('PhaseState', () => {
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
-      const attackDistance = 2;
+      const attackDistance = MELEE_ATTACK_RANGE - 5;
 
       Circuit.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyMeleeAttackAction(
@@ -192,7 +192,7 @@ describe('PhaseState', () => {
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
-      const attackDistance = 2;
+      const attackDistance = MELEE_ATTACK_RANGE - 5;
 
       Circuit.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyMeleeAttackAction(
@@ -233,7 +233,7 @@ describe('PhaseState', () => {
       const sig = Signature.create(rngPrivateKey, enc.cipherText);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
-      const attackDistance = 25;
+      const attackDistance = MELEE_ATTACK_RANGE + 5;
 
       expect(() => {
         Circuit.runAndCheck(() => {
