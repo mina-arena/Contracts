@@ -1,4 +1,4 @@
-import { Field, Struct, PublicKey, UInt32, Circuit } from 'snarkyjs';
+import { Field, Struct, PublicKey, UInt32, Circuit, Poseidon } from 'snarkyjs';
 import { TurnState } from '../turn/TurnState';
 
 export class GameState extends Struct({
@@ -33,6 +33,25 @@ export class GameState extends Struct({
       arenaWidth,
       turnsNonce,
     });
+  }
+
+  hash(): Field {
+    return Poseidon.hash([
+      this.piecesRoot,
+      this.arenaRoot,
+      this.playerTurn,
+      this.player1PublicKey.x,
+      this.player1PublicKey.isOdd.toField(),
+      this.player2PublicKey.x,
+      this.player2PublicKey.isOdd.toField(),
+      this.arenaLength.value,
+      this.arenaWidth.value,
+      this.turnsNonce,
+    ]);
+  }
+
+  assertEquals(other: GameState) {
+    this.hash().assertEquals(other.hash());
   }
 
   applyTurn(turnState: TurnState): GameState {

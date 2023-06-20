@@ -1,4 +1,4 @@
-import { Field, Struct, PublicKey } from 'snarkyjs';
+import { Field, Struct, PublicKey, Poseidon } from 'snarkyjs';
 
 import { PhaseState } from '../phase/PhaseState.js';
 
@@ -29,6 +29,23 @@ export class TurnState extends Struct({
       currentArenaState,
       playerPublicKey,
     });
+  }
+
+  hash(): Field {
+    return Poseidon.hash([
+      this.nonce,
+      this.phaseNonce,
+      this.startingPiecesState,
+      this.currentPiecesState,
+      this.startingArenaState,
+      this.currentArenaState,
+      this.playerPublicKey.x,
+      this.playerPublicKey.isOdd.toField(),
+    ]);
+  }
+
+  assertEquals(other: TurnState) {
+    this.hash().assertEquals(other.hash());
   }
 
   applyPhase(phaseState: PhaseState): TurnState {
