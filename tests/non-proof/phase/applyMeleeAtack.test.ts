@@ -80,7 +80,7 @@ describe('PhaseState', () => {
       gameState = new GameState(
         piecesTree.tree.getRoot(),
         arenaTree.tree.getRoot(),
-        Field(0),
+        Field(1),
         player1PrivateKey.toPublicKey(),
         player2PrivateKey.toPublicKey(),
         ARENA_HEIGHT_U32,
