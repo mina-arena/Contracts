@@ -24,18 +24,21 @@ describe('TurnState', () => {
       Field(0),
       Field(0),
       Field(0),
+      Field(0),
       player1PrivateKey.toPublicKey()
     );
   });
 
   describe('init', () => {
     it('initalizes and serializes input', async () => {
+      const expectedNonce = 0;
       const expectedPhaseNonce = 0;
       const expectedPiecesRoot = Field(0).toString();
       const expectedArenaRoot = Field(0).toString();
       const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();
 
       expect(initialTurnState.toJSON()).toEqual({
+        nonce: expectedNonce,
         phaseNonce: expectedPhaseNonce,
         startingPiecesState: expectedPiecesRoot,
         currentPiecesState: expectedPiecesRoot,
@@ -60,12 +63,14 @@ describe('TurnState', () => {
 
       const newTurnState = initialTurnState.applyPhase(dummyPhase);
 
+      const expectedNonce = 0;
       const expectedPhaseNonce = 1;
       const expectedPiecesRoot = Field(0).toString();
       const expectedArenaRoot = Field(0).toString();
       const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();
 
       expect(newTurnState.toJSON()).toEqual({
+        nonce: expectedNonce,
         phaseNonce: expectedPhaseNonce,
         startingPiecesState: expectedPiecesRoot,
         currentPiecesState: Field(10).toString(),

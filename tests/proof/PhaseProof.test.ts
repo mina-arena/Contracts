@@ -21,6 +21,10 @@ import { jest } from '@jest/globals';
 
 import fs from 'fs';
 import { EncrytpedAttackRoll } from '../../src/objects/AttackDiceRolls';
+import {
+  ARENA_HEIGHT_U32,
+  ARENA_WIDTH_U32,
+} from '../../src/gameplay_constants';
 
 jest.setTimeout(600_000);
 
@@ -75,16 +79,16 @@ describe('PhaseProof', () => {
       arenaTree.set(100, 20, Field(1));
       arenaTree.set(150, 15, Field(1));
       arenaTree.set(125, 750, Field(1));
-      gameState = new GameState({
-        piecesRoot: piecesTree.tree.getRoot(),
-        arenaRoot: arenaTree.tree.getRoot(),
-        playerTurn: Field(0),
-        player1PublicKey: player1PrivateKey.toPublicKey(),
-        player2PublicKey: player2PrivateKey.toPublicKey(),
-        arenaLength: UInt32.from(800),
-        arenaWidth: UInt32.from(800),
-        turnsCompleted: UInt32.from(0),
-      });
+      gameState = new GameState(
+        piecesTree.tree.getRoot(),
+        arenaTree.tree.getRoot(),
+        Field(0),
+        player1PrivateKey.toPublicKey(),
+        player2PrivateKey.toPublicKey(),
+        ARENA_HEIGHT_U32,
+        ARENA_WIDTH_U32,
+        Field(0)
+      );
 
       initialPhaseState = new PhaseState(
         Field(0),
@@ -215,16 +219,16 @@ describe('PhaseProof', () => {
       );
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
-      gameState = new GameState({
-        piecesRoot: piecesTree.tree.getRoot(),
-        arenaRoot: arenaTree.tree.getRoot(),
-        playerTurn: Field(0),
-        player1PublicKey: player1PrivateKey.toPublicKey(),
-        player2PublicKey: player2PrivateKey.toPublicKey(),
-        arenaLength: UInt32.from(800),
-        arenaWidth: UInt32.from(800),
-        turnsCompleted: UInt32.from(0),
-      });
+      gameState = new GameState(
+        piecesTree.tree.getRoot(),
+        arenaTree.tree.getRoot(),
+        Field(0),
+        player1PrivateKey.toPublicKey(),
+        player2PrivateKey.toPublicKey(),
+        ARENA_HEIGHT_U32,
+        ARENA_WIDTH_U32,
+        Field(0)
+      );
 
       initialPhaseState = new PhaseState(
         Field(0),
@@ -348,16 +352,16 @@ describe('PhaseProof', () => {
       );
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
-      gameState = new GameState({
-        piecesRoot: piecesTree.tree.getRoot(),
-        arenaRoot: arenaTree.tree.getRoot(),
-        playerTurn: Field(0),
-        player1PublicKey: player1PrivateKey.toPublicKey(),
-        player2PublicKey: player2PrivateKey.toPublicKey(),
-        arenaLength: UInt32.from(800),
-        arenaWidth: UInt32.from(800),
-        turnsCompleted: UInt32.from(0),
-      });
+      gameState = new GameState(
+        piecesTree.tree.getRoot(),
+        arenaTree.tree.getRoot(),
+        Field(0),
+        player1PrivateKey.toPublicKey(),
+        player2PrivateKey.toPublicKey(),
+        ARENA_HEIGHT_U32,
+        ARENA_WIDTH_U32,
+        Field(0)
+      );
 
       initialPhaseState = new PhaseState(
         Field(0),
