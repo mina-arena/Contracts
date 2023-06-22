@@ -16,7 +16,11 @@ import { Unit } from '../../../src/objects/Unit';
 import { ArenaMerkleTree } from '../../../src/objects/ArenaMerkleTree';
 import { PiecesMerkleTree } from '../../../src/objects/PiecesMerkleTree';
 import { EncrytpedAttackRoll } from '../../../src/objects/AttackDiceRolls';
-import { MELEE_ATTACK_RANGE } from '../../../src/gameplay_constants';
+import {
+  ARENA_WIDTH_U32,
+  ARENA_HEIGHT_U32,
+  MELEE_ATTACK_RANGE,
+} from '../../../src/gameplay_constants';
 
 describe('PhaseState', () => {
   let player1PrivateKey: PrivateKey;
@@ -74,16 +78,16 @@ describe('PhaseState', () => {
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
       piecesTree.set(targetPiece2.id.toBigInt(), targetPiece2.hash());
-      gameState = new GameState({
-        piecesRoot: piecesTree.tree.getRoot(),
-        arenaRoot: arenaTree.tree.getRoot(),
-        playerTurn: Field(0),
-        player1PublicKey: player1PrivateKey.toPublicKey(),
-        player2PublicKey: player2PrivateKey.toPublicKey(),
-        arenaLength: UInt32.from(800),
-        arenaWidth: UInt32.from(800),
-        turnsCompleted: UInt32.from(0),
-      });
+      gameState = new GameState(
+        piecesTree.tree.getRoot(),
+        arenaTree.tree.getRoot(),
+        Field(1),
+        player1PrivateKey.toPublicKey(),
+        player2PrivateKey.toPublicKey(),
+        ARENA_HEIGHT_U32,
+        ARENA_WIDTH_U32,
+        Field(0)
+      );
 
       initialPhaseState = new PhaseState(
         Field(0),

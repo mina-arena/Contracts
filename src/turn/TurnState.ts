@@ -3,6 +3,7 @@ import { Field, Struct, PublicKey } from 'snarkyjs';
 import { PhaseState } from '../phase/PhaseState.js';
 
 export class TurnState extends Struct({
+  nonce: Field, // to order this turn relative to others in the game
   phaseNonce: Field, // nonce of phases processed so far
   startingPiecesState: Field, // Pieces state before this turn
   currentPiecesState: Field, // Pieces state after the phases applied in this turn
@@ -11,6 +12,7 @@ export class TurnState extends Struct({
   playerPublicKey: PublicKey, // the player this turn is for
 }) {
   constructor(
+    nonce: Field,
     phaseNonce: Field,
     startingPiecesState: Field,
     currentPiecesState: Field,
@@ -19,6 +21,7 @@ export class TurnState extends Struct({
     playerPublicKey: PublicKey
   ) {
     super({
+      nonce,
       phaseNonce,
       startingPiecesState,
       currentPiecesState,
@@ -28,21 +31,6 @@ export class TurnState extends Struct({
     });
   }
 
-  static init(
-    startingPiecesState: Field,
-    startingArenaState: Field,
-    playerPublicKey: PublicKey
-  ): TurnState {
-    return new TurnState(
-      Field(0),
-      startingPiecesState,
-      startingPiecesState,
-      startingArenaState,
-      startingArenaState,
-      playerPublicKey
-    );
-  }
-
   applyPhase(phaseState: PhaseState): TurnState {
     phaseState.nonce.assertGreaterThan(this.phaseNonce);
     phaseState.playerPublicKey.assertEquals(this.playerPublicKey);
@@ -50,6 +38,7 @@ export class TurnState extends Struct({
     phaseState.startingArenaState.assertEquals(this.currentArenaState);
 
     return new TurnState(
+      this.nonce,
       phaseState.nonce,
       this.startingPiecesState,
       phaseState.currentPiecesState,
@@ -61,6 +50,7 @@ export class TurnState extends Struct({
 
   toJSON() {
     return {
+      nonce: Number(this.nonce.toString()),
       phaseNonce: Number(this.phaseNonce.toString()),
       startingPiecesState: this.startingPiecesState.toString(),
       currentPiecesState: this.currentPiecesState.toString(),
