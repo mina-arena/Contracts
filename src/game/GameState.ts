@@ -1,4 +1,4 @@
-import { Field, Struct, PublicKey, UInt32, Provable, Poseidon } from 'snarkyjs';
+import { Field, Struct, PublicKey, UInt32, Circuit, Poseidon } from 'snarkyjs';
 import { TurnState } from '../turn/TurnState.js';
 
 class NextTurnTuple extends Struct({
@@ -60,7 +60,7 @@ export class GameState extends Struct({
   }
 
   applyTurn(turnState: TurnState): GameState {
-    const nextTurnTuple = Provable.if(
+    const nextTurnTuple = Circuit.if(
       this.playerTurn.equals(Field(1)),
       NextTurnTuple,
       new NextTurnTuple({
