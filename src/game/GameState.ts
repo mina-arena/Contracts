@@ -1,5 +1,23 @@
-import { Field, Struct, PublicKey, UInt32, Circuit, Poseidon } from 'snarkyjs';
-import { TurnState } from '../turn/TurnState';
+import { Field, Struct, PublicKey, UInt32, Provable, Poseidon } from 'snarkyjs';
+import { TurnState } from '../turn/TurnState.js';
+
+class NextTurnTuple {
+  playerPublicKey: PublicKey;
+  playerTurn: Field;
+
+  constructor(publicKey: PublicKey, field: Field) {
+    this.playerPublicKey = publicKey;
+    this.playerTurn = field;
+  }
+
+  toFields(): Field[] {
+    return [
+      this.playerPublicKey.x,
+      this.playerPublicKey.isOdd.toField(),
+      this.playerTurn,
+    ];
+  }
+}
 
 export class GameState extends Struct({
   piecesRoot: Field, // root hash of pieces in the arena keyed by their id
@@ -55,20 +73,20 @@ export class GameState extends Struct({
   }
 
   applyTurn(turnState: TurnState): GameState {
-    const [expectedPlayerKey, nextPlayerTurn] = Circuit.if(
+    const nextTurnTuple = Provable.if(
       this.playerTurn.equals(Field(1)),
-      [this.player1PublicKey, Field(2)],
-      [this.player2PublicKey, Field(1)]
+      new NextTurnTuple(this.player1PublicKey, Field(2)),
+      new NextTurnTuple(this.player2PublicKey, Field(1))
     );
     turnState.nonce.assertGreaterThan(this.turnsNonce);
-    turnState.playerPublicKey.assertEquals(expectedPlayerKey);
+    turnState.playerPublicKey.assertEquals(nextTurnTuple.playerPublicKey);
     turnState.startingPiecesState.assertEquals(this.piecesRoot);
     turnState.startingArenaState.assertEquals(this.arenaRoot);
 
     return new GameState(
       turnState.currentPiecesState,
       turnState.currentArenaState,
-      nextPlayerTurn,
+      nextTurnTuple.playerTurn,
       this.player1PublicKey,
       this.player2PublicKey,
       this.arenaLength,
