@@ -1,6 +1,6 @@
 import { Experimental, SelfProof } from 'snarkyjs';
-import { TurnState } from './TurnState';
-import { PhaseProof } from '../phase/PhaseProof';
+import { TurnState } from './TurnState.js';
+import { PhaseProof } from '../phase/PhaseProof.js';
 
 export const TurnProgram = Experimental.ZkProgram({
   publicInput: TurnState,

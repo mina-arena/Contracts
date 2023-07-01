@@ -1,6 +1,6 @@
 import { Experimental, SelfProof } from 'snarkyjs';
-import { GameState } from './GameState';
-import { TurnProof } from '../turn/TurnProof';
+import { GameState } from './GameState.js';
+import { TurnProof } from '../turn/TurnProof.js';
 
 export const GameProgram = Experimental.ZkProgram({
   publicInput: GameState,

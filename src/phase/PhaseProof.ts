@@ -5,13 +5,13 @@ import {
   Signature,
   UInt32,
 } from 'snarkyjs';
-import { PhaseState } from './PhaseState';
-import { Piece } from '../objects/Piece';
-import { Action } from '../objects/Action';
-import { PiecesMerkleWitness } from '../objects/PiecesMerkleTree';
-import { ArenaMerkleWitness } from '../objects/ArenaMerkleTree';
-import { Position } from '../objects/Position';
-import { EncrytpedAttackRoll } from '../objects/AttackDiceRolls';
+import { PhaseState } from './PhaseState.js';
+import { Piece } from '../objects/Piece.js';
+import { Action } from '../objects/Action.js';
+import { PiecesMerkleWitness } from '../objects/PiecesMerkleTree.js';
+import { ArenaMerkleWitness } from '../objects/ArenaMerkleTree.js';
+import { Position } from '../objects/Position.js';
+import { EncrytpedAttackRoll } from '../objects/AttackDiceRolls.js';
 
 export const PhaseProgram = Experimental.ZkProgram({
   publicInput: PhaseState,

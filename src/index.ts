@@ -20,6 +20,8 @@ import {
   EncrytpedAttackRoll,
 } from './objects/AttackDiceRolls.js';
 import { PhaseProgram, PhaseProof } from './phase/PhaseProof.js';
+import { TurnProgram, TurnProof } from './turn/TurnProof.js';
+import { GameProgram, GameProof } from './game/GameProof.js';
 import {
   MELEE_ATTACK_RANGE,
   MELEE_ATTACK_RANGE_U32,
@@ -43,6 +45,10 @@ export {
   EncrytpedAttackRoll,
   PhaseProgram,
   PhaseProof,
+  TurnProgram,
+  TurnProof,
+  GameProgram,
+  GameProof,
   MELEE_ATTACK_RANGE,
   MELEE_ATTACK_RANGE_U32,
 };
