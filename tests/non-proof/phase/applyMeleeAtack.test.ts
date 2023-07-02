@@ -6,9 +6,6 @@ import {
   Signature,
   Circuit,
 } from 'snarkyjs';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 import { PhaseState } from '../../../src/phase/PhaseState';
 import { GameState } from '../../../src/game/GameState';
@@ -30,7 +27,7 @@ describe('PhaseState', () => {
   let player2PrivateKey: PrivateKey;
   let serverPrivateKey: PrivateKey;
   const rngPrivateKey: PrivateKey = PrivateKey.fromBase58(
-    process.env.RNG_PRIVATE_KEY || ''
+    'EKEMFSemZ3c9SMDpEzJ1LSsRGgbDmJ6878VwSdBtMNot2wpR7GQK'
   );
   let gameState: GameState;
   let initialPhaseState: PhaseState;

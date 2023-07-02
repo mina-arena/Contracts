@@ -20,16 +20,13 @@ import {
   ARENA_HEIGHT_U32,
   ARENA_WIDTH_U32,
 } from '../../../src/gameplay_constants';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 describe('PhaseState', () => {
   let player1PrivateKey: PrivateKey;
   let player2PrivateKey: PrivateKey;
   let serverPrivateKey: PrivateKey;
   const rngPrivateKey: PrivateKey = PrivateKey.fromBase58(
-    process.env.RNG_PRIVATE_KEY || ''
+    'EKEMFSemZ3c9SMDpEzJ1LSsRGgbDmJ6878VwSdBtMNot2wpR7GQK'
   );
   let gameState: GameState;
   let initialPhaseState: PhaseState;
