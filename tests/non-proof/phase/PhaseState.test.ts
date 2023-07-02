@@ -28,24 +28,27 @@ describe('PhaseState', () => {
 
   describe('init', () => {
     beforeEach(async () => {
-      const piece1 = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        Position.fromXY(100, 20),
-        Unit.default()
-      );
-      const piece2 = new Piece(
-        Field(2),
-        player1PrivateKey.toPublicKey(),
-        Position.fromXY(150, 15),
-        Unit.default()
-      );
-      const piece3 = new Piece(
-        Field(3),
-        player2PrivateKey.toPublicKey(),
-        Position.fromXY(125, 750),
-        Unit.default()
-      );
+      const piece1 = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: Position.fromXY(100, 20),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      const piece2 = new Piece({
+        id: Field(2),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: Position.fromXY(150, 15),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      const piece3 = new Piece({
+        id: Field(3),
+        playerPublicKey: player2PrivateKey.toPublicKey(),
+        position: Position.fromXY(125, 750),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       piecesTree.set(piece1.id.toBigInt(), piece1.hash());
       piecesTree.set(piece2.id.toBigInt(), piece2.hash());
       piecesTree.set(piece3.id.toBigInt(), piece3.hash());
@@ -62,15 +65,15 @@ describe('PhaseState', () => {
         ARENA_WIDTH_U32,
         Field(0)
       );
-      initialPhaseState = new PhaseState(
-        Field(0),
-        Field(0),
-        gameState.piecesRoot,
-        gameState.piecesRoot,
-        gameState.arenaRoot,
-        gameState.arenaRoot,
-        player1PrivateKey.toPublicKey()
-      );
+      initialPhaseState = new PhaseState({
+        nonce: Field(0),
+        actionsNonce: Field(0),
+        startingPiecesState: gameState.piecesRoot,
+        currentPiecesState: gameState.piecesRoot,
+        startingArenaState: gameState.arenaRoot,
+        currentArenaState: gameState.arenaRoot,
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
     });
 
     it('initalizes and serializes input', async () => {

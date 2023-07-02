@@ -11,23 +11,6 @@ export class Piece extends Struct({
   baseUnit: Unit,
   condition: PieceCondition,
 }) {
-  constructor(
-    id: Field,
-    playerPublicKey: PublicKey,
-    position: Position,
-    baseUnit: Unit,
-    condition?: PieceCondition | undefined
-  ) {
-    condition = condition || new PieceCondition(baseUnit.stats);
-    super({
-      id,
-      playerPublicKey,
-      position,
-      baseUnit,
-      condition,
-    });
-  }
-
   hash(): Field {
     return Poseidon.hash([
       this.id,
@@ -44,13 +27,13 @@ export class Piece extends Struct({
     const newPosition = this.position.clone();
     const newBaseUnit = this.baseUnit.clone();
     const newCondition = this.condition.clone();
-    return new Piece(
-      newId,
-      newPublicKey,
-      newPosition,
-      newBaseUnit,
-      newCondition
-    );
+    return new Piece({
+      id: newId,
+      playerPublicKey: newPublicKey,
+      position: newPosition,
+      baseUnit: newBaseUnit,
+      condition: newCondition,
+    });
   }
 
   toJSON(): string {

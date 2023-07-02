@@ -1,22 +1,13 @@
-import { PrivateKey, Field, Poseidon, Bool } from 'snarkyjs';
-
-import { GameState } from '../../../src/game/GameState';
-import { Action } from '../../../src/objects/Action';
-import { Position } from '../../../src/objects/Position';
-import { Piece } from '../../../src/objects/Piece';
-import { Unit } from '../../../src/objects/Unit';
+import { PrivateKey, Field } from 'snarkyjs';
 import { TurnState } from '../../../src/turn/TurnState';
 import { PhaseState } from '../../../src/phase/PhaseState';
 
 describe('TurnState', () => {
   let player1PrivateKey: PrivateKey;
-  let player2PrivateKey: PrivateKey;
-  let emptyGameState: GameState;
   let initialTurnState: TurnState;
 
   beforeEach(async () => {
     player1PrivateKey = PrivateKey.random();
-    player2PrivateKey = PrivateKey.random();
 
     initialTurnState = new TurnState(
       Field(0),
@@ -51,15 +42,15 @@ describe('TurnState', () => {
 
   describe('applyPhase', () => {
     it('updates turn state', async () => {
-      const dummyPhase = new PhaseState(
-        Field(1),
-        Field(3),
-        Field(0),
-        Field(10),
-        Field(0),
-        Field(20),
-        player1PrivateKey.toPublicKey()
-      );
+      const dummyPhase = new PhaseState({
+        nonce: Field(1),
+        actionsNonce: Field(3),
+        startingPiecesState: Field(0),
+        currentPiecesState: Field(10),
+        startingArenaState: Field(0),
+        currentArenaState: Field(20),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
       const newTurnState = initialTurnState.applyPhase(dummyPhase);
 
@@ -81,15 +72,15 @@ describe('TurnState', () => {
     });
 
     it('rejects a phase with nonce too small', async () => {
-      const dummyPhase = new PhaseState(
-        Field(0), // nonce should be >= 1
-        Field(3),
-        Field(0),
-        Field(10),
-        Field(0),
-        Field(20),
-        player1PrivateKey.toPublicKey()
-      );
+      const dummyPhase = new PhaseState({
+        nonce: Field(0), // nonce should be >= 1
+        actionsNonce: Field(3),
+        startingPiecesState: Field(0),
+        currentPiecesState: Field(10),
+        startingArenaState: Field(0),
+        currentArenaState: Field(20),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
       expect(() => {
         initialTurnState.applyPhase(dummyPhase);
@@ -97,15 +88,15 @@ describe('TurnState', () => {
     });
 
     it('rejects a phase where the starting state does not match ', async () => {
-      const dummyPhase = new PhaseState(
-        Field(1),
-        Field(3),
-        Field(1), // starting state should be 0
-        Field(10),
-        Field(2),
-        Field(20),
-        player1PrivateKey.toPublicKey()
-      );
+      const dummyPhase = new PhaseState({
+        nonce: Field(1),
+        actionsNonce: Field(3),
+        startingPiecesState: Field(1), // starting state should be 0
+        currentPiecesState: Field(10),
+        startingArenaState: Field(0),
+        currentArenaState: Field(20),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
       expect(() => {
         initialTurnState.applyPhase(dummyPhase);

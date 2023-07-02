@@ -33,24 +33,27 @@ describe('PhaseState', () => {
     let piece: Piece;
     let action: Action;
     beforeEach(async () => {
-      const piece1 = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        Position.fromXY(100, 20),
-        Unit.default()
-      );
-      const piece2 = new Piece(
-        Field(2),
-        player1PrivateKey.toPublicKey(),
-        Position.fromXY(150, 15),
-        Unit.default()
-      );
-      const piece3 = new Piece(
-        Field(3),
-        player2PrivateKey.toPublicKey(),
-        Position.fromXY(125, 750),
-        Unit.default()
-      );
+      const piece1 = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: Position.fromXY(100, 20),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      const piece2 = new Piece({
+        id: Field(2),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: Position.fromXY(150, 15),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      const piece3 = new Piece({
+        id: Field(3),
+        playerPublicKey: player2PrivateKey.toPublicKey(),
+        position: Position.fromXY(125, 750),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       piecesTree.set(piece1.id.toBigInt(), piece1.hash());
       piecesTree.set(piece2.id.toBigInt(), piece2.hash());
       piecesTree.set(piece3.id.toBigInt(), piece3.hash());
@@ -68,25 +71,31 @@ describe('PhaseState', () => {
         Field(0)
       );
 
-      initialPhaseState = new PhaseState(
-        Field(0),
-        Field(0),
-        gameState.piecesRoot,
-        gameState.piecesRoot,
-        gameState.arenaRoot,
-        gameState.arenaRoot,
-        player1PrivateKey.toPublicKey()
-      );
+      initialPhaseState = new PhaseState({
+        nonce: Field(0),
+        actionsNonce: Field(0),
+        startingPiecesState: gameState.piecesRoot,
+        currentPiecesState: gameState.piecesRoot,
+        startingArenaState: gameState.arenaRoot,
+        currentArenaState: gameState.arenaRoot,
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
       oldPosition = Position.fromXY(100, 20);
       newPosition = Position.fromXY(100, 65);
-      piece = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        oldPosition,
-        Unit.default()
-      );
-      action = new Action(Field(1), Field(0), newPosition.hash(), Field(1));
+      piece = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: oldPosition,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      action = new Action({
+        nonce: Field(1),
+        actionType: Field(0),
+        actionParams: newPosition.hash(),
+        piece: Field(1),
+      });
     });
 
     it('moving a piece updates the phase', async () => {
@@ -143,14 +152,20 @@ describe('PhaseState', () => {
       pieceMapAfterMove.tree.setLeaf(1n, piece.hash());
       arenaTreeBothUnoccupied.set(100, 65, Field(1));
 
-      piece = new Piece(
-        Field(2),
-        player1PrivateKey.toPublicKey(),
-        Position.fromXY(150, 15),
-        Unit.default()
-      );
+      piece = new Piece({
+        id: Field(2),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: Position.fromXY(150, 15),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       const newNewPosition = Position.fromXY(140, 50);
-      action = new Action(Field(2), Field(0), newNewPosition.hash(), Field(2));
+      action = new Action({
+        nonce: Field(2),
+        actionType: Field(0),
+        actionParams: newNewPosition.hash(),
+        piece: Field(2),
+      });
       const secondMoveArenaTree = arenaTreeBothUnoccupied.clone();
       secondMoveArenaTree.set(150, 15, Field(0));
 
@@ -186,12 +201,12 @@ describe('PhaseState', () => {
     });
 
     it('rejects a move with nonce too small', async () => {
-      action = new Action(
-        Field(0), // nonce should be >= 1 for the first move in a phase
-        Field(0),
-        newPosition.hash(),
-        Field(1)
-      );
+      action = new Action({
+        nonce: Field(0),
+        actionType: Field(0),
+        actionParams: newPosition.hash(),
+        piece: Field(1),
+      });
 
       const moveDistance = 45;
       const arenaTreeBothUnoccupied = arenaTree.clone();
@@ -212,12 +227,12 @@ describe('PhaseState', () => {
     });
 
     it('rejects a move to a location which is occupied', async () => {
-      action = new Action(
-        Field(0),
-        Field(0),
-        Position.fromXY(100, 20).hash(), // the position of piece_1
-        Field(1)
-      );
+      action = new Action({
+        nonce: Field(0),
+        actionType: Field(0),
+        actionParams: Position.fromXY(100, 20).hash(), // the position of piece_1
+        piece: Field(1),
+      });
 
       const moveDistance = 0;
       const arenaTreeBothUnoccupied = arenaTree.clone();
@@ -238,12 +253,12 @@ describe('PhaseState', () => {
     });
 
     it('rejects a move of another players piece', async () => {
-      action = new Action(
-        Field(0),
-        Field(0),
-        Position.fromXY(125, 700).hash(),
-        Field(3) // piece 3 belongs to player 2, but this phase belongs to player 1
-      );
+      action = new Action({
+        nonce: Field(0),
+        actionType: Field(0),
+        actionParams: Position.fromXY(125, 700).hash(),
+        piece: Field(3), // piece 3 belongs to player 2, but this phase belongs to player 1
+      });
 
       const moveDistance = 50;
       const arenaTreeBothUnoccupied = arenaTree.clone();
@@ -265,7 +280,12 @@ describe('PhaseState', () => {
 
     it('rejects a move further than the pieces movement stat', async () => {
       newPosition = Position.fromXY(100, 85);
-      action = new Action(Field(1), Field(0), newPosition.hash(), Field(1));
+      action = new Action({
+        nonce: Field(1),
+        actionType: Field(0),
+        actionParams: newPosition.hash(),
+        piece: Field(1), // piece 3 belongs to player 2, but this phase belongs to player 1
+      });
 
       const moveDistance = 65;
       const arenaTreeBothUnoccupied = arenaTree.clone();

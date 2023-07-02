@@ -25,6 +25,7 @@ import {
   ARENA_HEIGHT_U32,
   ARENA_WIDTH_U32,
 } from '../../src/gameplay_constants';
+import { PieceCondition } from '../../src/objects/PieceCondition';
 
 jest.setTimeout(600_000);
 
@@ -53,24 +54,27 @@ describe('PhaseProof', () => {
       player1PrivateKey = PrivateKey.random();
       player2PrivateKey = PrivateKey.random();
       piecesTree = new PiecesMerkleTree();
-      const piece1 = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        Position.fromXY(100, 20),
-        Unit.default()
-      );
-      const piece2 = new Piece(
-        Field(2),
-        player1PrivateKey.toPublicKey(),
-        Position.fromXY(150, 15),
-        Unit.default()
-      );
-      const piece3 = new Piece(
-        Field(3),
-        player2PrivateKey.toPublicKey(),
-        Position.fromXY(125, 750),
-        Unit.default()
-      );
+      const piece1 = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: Position.fromXY(100, 20),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      const piece2 = new Piece({
+        id: Field(2),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: Position.fromXY(150, 15),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      const piece3 = new Piece({
+        id: Field(3),
+        playerPublicKey: player2PrivateKey.toPublicKey(),
+        position: Position.fromXY(125, 750),
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
 
       piecesTree.set(piece1.id.toBigInt(), piece1.hash());
       piecesTree.set(piece2.id.toBigInt(), piece2.hash());
@@ -90,15 +94,15 @@ describe('PhaseProof', () => {
         Field(0)
       );
 
-      initialPhaseState = new PhaseState(
-        Field(0),
-        Field(0),
-        gameState.piecesRoot,
-        gameState.piecesRoot,
-        gameState.arenaRoot,
-        gameState.arenaRoot,
-        player1PrivateKey.toPublicKey()
-      );
+      initialPhaseState = new PhaseState({
+        nonce: Field(0),
+        actionsNonce: Field(0),
+        startingPiecesState: gameState.piecesRoot,
+        currentPiecesState: gameState.piecesRoot,
+        startingArenaState: gameState.arenaRoot,
+        currentArenaState: gameState.arenaRoot,
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
       console.timeEnd('applyMoveSetup');
     });
 
@@ -112,13 +116,19 @@ describe('PhaseProof', () => {
       // Move piece 1 to 100, 65
       oldPosition = Position.fromXY(100, 20);
       newPosition = Position.fromXY(100, 65);
-      piece = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        oldPosition,
-        Unit.default()
-      );
-      action = new Action(Field(1), Field(0), newPosition.hash(), Field(1));
+      piece = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: oldPosition,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      action = new Action({
+        nonce: Field(1),
+        actionType: Field(0),
+        actionParams: newPosition.hash(),
+        piece: Field(1),
+      });
 
       const initialProof = await PhaseProgram.init(
         initialPhaseState,
@@ -134,15 +144,15 @@ describe('PhaseProof', () => {
       finalArenaTree.set(100, 65, Field(1));
 
       // the state that the phase should have after the move
-      const finalPhaseState = new PhaseState(
-        initialPhaseState.nonce,
-        action.nonce,
-        initialPhaseState.startingPiecesState,
-        pieceMapAfterMove.tree.getRoot(),
-        initialPhaseState.startingArenaState,
-        finalArenaTree.tree.getRoot(),
-        initialPhaseState.playerPublicKey
-      );
+      const finalPhaseState = new PhaseState({
+        nonce: initialPhaseState.nonce,
+        actionsNonce: action.nonce,
+        startingPiecesState: initialPhaseState.startingPiecesState,
+        currentPiecesState: pieceMapAfterMove.tree.getRoot(),
+        startingArenaState: initialPhaseState.startingArenaState,
+        currentArenaState: finalArenaTree.tree.getRoot(),
+        playerPublicKey: initialPhaseState.playerPublicKey,
+      });
 
       Circuit.log(
         `initial phase state: ${initialPhaseState.hash().toString()}`
@@ -204,19 +214,21 @@ describe('PhaseProof', () => {
       attackingPiecePosition = Position.fromXY(100, 100);
       targetPiece1Position = Position.fromXY(100, 120); // in range
 
-      attackingPiece = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        attackingPiecePosition,
-        Unit.default()
-      );
+      attackingPiece = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: attackingPiecePosition,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       attackingPiece.condition.saveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
-      targetPiece1 = new Piece(
-        Field(2),
-        player2PrivateKey.toPublicKey(),
-        targetPiece1Position,
-        Unit.default()
-      );
+      targetPiece1 = new Piece({
+        id: Field(2),
+        playerPublicKey: player2PrivateKey.toPublicKey(),
+        position: targetPiece1Position,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
       gameState = new GameState(
@@ -230,17 +242,22 @@ describe('PhaseProof', () => {
         Field(0)
       );
 
-      initialPhaseState = new PhaseState(
-        Field(0),
-        Field(0),
-        gameState.piecesRoot,
-        gameState.piecesRoot,
-        gameState.arenaRoot,
-        gameState.arenaRoot,
-        player1PrivateKey.toPublicKey()
-      );
+      initialPhaseState = new PhaseState({
+        nonce: Field(0),
+        actionsNonce: Field(0),
+        startingPiecesState: gameState.piecesRoot,
+        currentPiecesState: gameState.piecesRoot,
+        startingArenaState: gameState.arenaRoot,
+        currentArenaState: gameState.arenaRoot,
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
-      attack1 = new Action(Field(1), Field(1), targetPiece1.hash(), Field(1));
+      attack1 = new Action({
+        nonce: Field(1),
+        actionType: Field(1),
+        actionParams: targetPiece1.hash(),
+        piece: Field(1),
+      });
       console.timeEnd('applyRangedAttackSetup');
     });
 
@@ -250,7 +267,11 @@ describe('PhaseProof', () => {
         [Field(6), Field(6), Field(1)],
         serverPrivateKey.toPublicKey()
       );
-      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      const sig = Signature.create(rngPrivateKey, [
+        Field(3),
+        Field(6),
+        ...enc.cipherText,
+      ]);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const attackDistance = 20;
@@ -268,15 +289,15 @@ describe('PhaseProof', () => {
       pieceMapAfterAttack.set(pieceClone.id.toBigInt(), pieceClone.hash());
 
       // the state that the phase should have after the move
-      const finalPhaseState = new PhaseState(
-        initialPhaseState.nonce,
-        attack1.nonce,
-        initialPhaseState.startingPiecesState,
-        pieceMapAfterAttack.tree.getRoot(),
-        initialPhaseState.startingArenaState,
-        initialPhaseState.currentArenaState,
-        initialPhaseState.playerPublicKey
-      );
+      const finalPhaseState = new PhaseState({
+        nonce: initialPhaseState.nonce,
+        actionsNonce: attack1.nonce,
+        startingPiecesState: initialPhaseState.startingPiecesState,
+        currentPiecesState: pieceMapAfterAttack.tree.getRoot(),
+        startingArenaState: initialPhaseState.startingArenaState,
+        currentArenaState: initialPhaseState.currentArenaState,
+        playerPublicKey: initialPhaseState.playerPublicKey,
+      });
 
       Circuit.log(
         `initial phase state: ${initialPhaseState.hash().toString()}`
@@ -337,19 +358,21 @@ describe('PhaseProof', () => {
       attackingPiecePosition = Position.fromXY(100, 100);
       targetPiece1Position = Position.fromXY(100, 101); // in range
 
-      attackingPiece = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        attackingPiecePosition,
-        Unit.default()
-      );
+      attackingPiece = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: attackingPiecePosition,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       attackingPiece.condition.saveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
-      targetPiece1 = new Piece(
-        Field(2),
-        player2PrivateKey.toPublicKey(),
-        targetPiece1Position,
-        Unit.default()
-      );
+      targetPiece1 = new Piece({
+        id: Field(2),
+        playerPublicKey: player2PrivateKey.toPublicKey(),
+        position: targetPiece1Position,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
       gameState = new GameState(
@@ -363,17 +386,22 @@ describe('PhaseProof', () => {
         Field(0)
       );
 
-      initialPhaseState = new PhaseState(
-        Field(0),
-        Field(0),
-        gameState.piecesRoot,
-        gameState.piecesRoot,
-        gameState.arenaRoot,
-        gameState.arenaRoot,
-        player1PrivateKey.toPublicKey()
-      );
+      initialPhaseState = new PhaseState({
+        nonce: Field(0),
+        actionsNonce: Field(0),
+        startingPiecesState: gameState.piecesRoot,
+        currentPiecesState: gameState.piecesRoot,
+        startingArenaState: gameState.arenaRoot,
+        currentArenaState: gameState.arenaRoot,
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
-      attack1 = new Action(Field(1), Field(2), targetPiece1.hash(), Field(1));
+      attack1 = new Action({
+        nonce: Field(1),
+        actionType: Field(2),
+        actionParams: targetPiece1.hash(),
+        piece: Field(1),
+      });
       console.timeEnd('applyMeleeAttackSetup');
     });
 
@@ -383,7 +411,11 @@ describe('PhaseProof', () => {
         [Field(6), Field(6), Field(1)],
         serverPrivateKey.toPublicKey()
       );
-      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      const sig = Signature.create(rngPrivateKey, [
+        Field(3),
+        Field(6),
+        ...enc.cipherText,
+      ]);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const attackDistance = 1;
@@ -400,15 +432,15 @@ describe('PhaseProof', () => {
       pieceMapAfterAttack.set(pieceClone.id.toBigInt(), pieceClone.hash());
 
       // the state that the phase should have after the move
-      const finalPhaseState = new PhaseState(
-        initialPhaseState.nonce,
-        attack1.nonce,
-        initialPhaseState.startingPiecesState,
-        pieceMapAfterAttack.tree.getRoot(),
-        initialPhaseState.startingArenaState,
-        initialPhaseState.currentArenaState,
-        initialPhaseState.playerPublicKey
-      );
+      const finalPhaseState = new PhaseState({
+        nonce: initialPhaseState.nonce,
+        actionsNonce: attack1.nonce,
+        startingPiecesState: initialPhaseState.startingPiecesState,
+        currentPiecesState: pieceMapAfterAttack.tree.getRoot(),
+        startingArenaState: initialPhaseState.startingArenaState,
+        currentArenaState: initialPhaseState.currentArenaState,
+        playerPublicKey: initialPhaseState.playerPublicKey,
+      });
 
       Circuit.log(
         `initial phase state: ${initialPhaseState.hash().toString()}`
