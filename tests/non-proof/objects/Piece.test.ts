@@ -26,8 +26,13 @@ describe('Piece', () => {
       const unit = new Unit({ stats });
       const pos = Position.fromXY(50, 51);
       const pieceCondition = new PieceCondition(stats);
-      const piece = new Piece(pieceId, playerPublicKey, pos, unit);
-
+      const piece = new Piece({
+        id: pieceId,
+        playerPublicKey,
+        position: pos,
+        baseUnit: unit,
+        condition: pieceCondition,
+      });
       expect(piece.hash().toString()).toBe(
         Poseidon.hash([
           pieceId,
@@ -69,7 +74,13 @@ describe('Piece', () => {
       const playerPublicKey = PrivateKey.random().toPublicKey();
       const unit = Unit.default();
       const pos = Position.fromXY(50, 51);
-      const piece = new Piece(Field(7), playerPublicKey, pos, unit);
+      const piece = new Piece({
+        id: Field(7),
+        playerPublicKey,
+        position: pos,
+        baseUnit: unit,
+        condition: unit.stats,
+      });
 
       const clone = piece.clone();
 
@@ -80,7 +91,13 @@ describe('Piece', () => {
       const playerPublicKey = PrivateKey.random().toPublicKey();
       const unit = Unit.default();
       const pos = Position.fromXY(50, 51);
-      const piece = new Piece(Field(7), playerPublicKey, pos, unit);
+      const piece = new Piece({
+        id: Field(7),
+        playerPublicKey,
+        position: pos,
+        baseUnit: unit,
+        condition: unit.stats,
+      });
 
       let clone = piece.clone();
       clone.position.x = clone.position.x.add(1);

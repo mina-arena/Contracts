@@ -6,20 +6,6 @@ export class Action extends Struct({
   actionParams: Field, // hash of params, e.g. for move, Position.hash(), for attack, otherPiece.hash(), something like this
   piece: Field, // hash of piece
 }) {
-  constructor(
-    nonce: Field,
-    actionType: Field,
-    actionParams: Field,
-    piece: Field
-  ) {
-    super({
-      nonce,
-      actionType,
-      actionParams,
-      piece,
-    });
-  }
-
   signatureArguments(): [Field, Field, Field, Field] {
     return [this.nonce, this.actionType, this.actionParams, this.piece];
   }

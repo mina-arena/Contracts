@@ -9,8 +9,12 @@ describe('Action', () => {
     const actionType = Field(0);
     const actionParams = Poseidon.hash([Field(1), new Bool(true).toField()]);
     const pieceId = Poseidon.hash([Field(0)]);
-    const action = new Action(nonce, actionType, actionParams, pieceId);
-
+    const action = new Action({
+      nonce,
+      actionType,
+      actionParams,
+      piece: pieceId,
+    });
     expect(action.signatureArguments().toString()).toBe(
       [nonce, actionType, actionParams, pieceId].toString()
     );

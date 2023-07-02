@@ -27,7 +27,7 @@ describe('PhaseState', () => {
   let serverPrivateKey: PrivateKey;
   const rngPrivateKey: PrivateKey = PrivateKey.fromBase58(
     'EKEMFSemZ3c9SMDpEzJ1LSsRGgbDmJ6878VwSdBtMNot2wpR7GQK'
-  ); // test value for now
+  );
   let gameState: GameState;
   let initialPhaseState: PhaseState;
   let piecesTree: PiecesMerkleTree;
@@ -55,25 +55,28 @@ describe('PhaseState', () => {
       targetPiece1Position = Position.fromXY(100, 120); // in range
       targetPiece2Position = Position.fromXY(100, 200); // out of range
 
-      attackingPiece = new Piece(
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        attackingPiecePosition,
-        Unit.default()
-      );
+      attackingPiece = new Piece({
+        id: Field(1),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+        position: attackingPiecePosition,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       attackingPiece.condition.saveRoll = UInt32.from(0); // Ensure that attacker's save roll is not counted
-      targetPiece1 = new Piece(
-        Field(2),
-        player2PrivateKey.toPublicKey(),
-        targetPiece1Position,
-        Unit.default()
-      );
-      targetPiece2 = new Piece(
-        Field(3),
-        player2PrivateKey.toPublicKey(),
-        targetPiece2Position,
-        Unit.default()
-      );
+      targetPiece1 = new Piece({
+        id: Field(2),
+        playerPublicKey: player2PrivateKey.toPublicKey(),
+        position: targetPiece1Position,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
+      targetPiece2 = new Piece({
+        id: Field(3),
+        playerPublicKey: player2PrivateKey.toPublicKey(),
+        position: targetPiece2Position,
+        baseUnit: Unit.default(),
+        condition: Unit.default().stats,
+      });
       piecesTree.set(attackingPiece.id.toBigInt(), attackingPiece.hash());
       piecesTree.set(targetPiece1.id.toBigInt(), targetPiece1.hash());
       piecesTree.set(targetPiece2.id.toBigInt(), targetPiece2.hash());
@@ -88,18 +91,28 @@ describe('PhaseState', () => {
         Field(0)
       );
 
-      initialPhaseState = new PhaseState(
-        Field(0),
-        Field(0),
-        gameState.piecesRoot,
-        gameState.piecesRoot,
-        gameState.arenaRoot,
-        gameState.arenaRoot,
-        player1PrivateKey.toPublicKey()
-      );
+      initialPhaseState = new PhaseState({
+        nonce: Field(0),
+        actionsNonce: Field(0),
+        startingPiecesState: gameState.piecesRoot,
+        currentPiecesState: gameState.piecesRoot,
+        startingArenaState: gameState.arenaRoot,
+        currentArenaState: gameState.arenaRoot,
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
-      attack1 = new Action(Field(1), Field(1), targetPiece1.hash(), Field(1));
-      attack2 = new Action(Field(1), Field(1), targetPiece2.hash(), Field(1));
+      attack1 = new Action({
+        nonce: Field(1),
+        actionType: Field(1),
+        actionParams: targetPiece1.hash(),
+        piece: Field(1),
+      });
+      attack2 = new Action({
+        nonce: Field(1),
+        actionType: Field(1),
+        actionParams: targetPiece2.hash(),
+        piece: Field(1),
+      });
     });
 
     it('hits, wounds, doesnt save, is in range', async () => {
@@ -107,7 +120,11 @@ describe('PhaseState', () => {
         [Field(6), Field(6), Field(1)],
         serverPrivateKey.toPublicKey()
       );
-      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      const sig = Signature.create(rngPrivateKey, [
+        Field(3),
+        Field(6),
+        ...enc.cipherText,
+      ]);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
@@ -149,7 +166,11 @@ describe('PhaseState', () => {
         [Field(6), Field(1), Field(1)],
         serverPrivateKey.toPublicKey()
       );
-      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      const sig = Signature.create(rngPrivateKey, [
+        Field(3),
+        Field(6),
+        ...enc.cipherText,
+      ]);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
@@ -191,7 +212,11 @@ describe('PhaseState', () => {
         [Field(6), Field(6), Field(6)],
         serverPrivateKey.toPublicKey()
       );
-      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      const sig = Signature.create(rngPrivateKey, [
+        Field(3),
+        Field(6),
+        ...enc.cipherText,
+      ]);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const piecesTreeBefore = piecesTree.clone();
@@ -233,7 +258,11 @@ describe('PhaseState', () => {
         [Field(6), Field(6), Field(6)],
         serverPrivateKey.toPublicKey()
       );
-      const sig = Signature.create(rngPrivateKey, enc.cipherText);
+      const sig = Signature.create(rngPrivateKey, [
+        Field(3),
+        Field(6),
+        ...enc.cipherText,
+      ]);
       diceRolls = EncrytpedAttackRoll.init(enc.publicKey, enc.cipherText, sig);
 
       const attackDistance = 100;
@@ -275,7 +304,11 @@ describe('PhaseState', () => {
         );
       }).toThrow(); // signature matches data, but it uses the wrong signing key
 
-      sig = Signature.create(rngPrivateKey, actualRoll.cipherText);
+      sig = Signature.create(rngPrivateKey, [
+        Field(3),
+        Field(6),
+        ...actualRoll.cipherText,
+      ]);
       expect(() => {
         diceRolls = EncrytpedAttackRoll.init(
           fakeRoll.publicKey,

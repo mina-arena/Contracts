@@ -27,40 +27,20 @@ export class PhaseState extends Struct({
   currentArenaState: Field, // Arena state after the actions applied in this turn
   playerPublicKey: PublicKey, // the player this turn is for
 }) {
-  constructor(
-    nonce: Field,
-    actionsNonce: Field,
-    startingPiecesState: Field,
-    currentPiecesState: Field,
-    startingArenaState: Field,
-    currentArenaState: Field,
-    playerPublicKey: PublicKey
-  ) {
-    super({
-      nonce,
-      actionsNonce,
-      startingPiecesState,
-      currentPiecesState,
-      startingArenaState,
-      currentArenaState,
-      playerPublicKey,
-    });
-  }
-
   static init(
     startingPiecesState: Field,
     startingArenaState: Field,
     playerPublicKey: PublicKey
   ): PhaseState {
-    return new PhaseState(
-      Field(0),
-      Field(0),
+    return new PhaseState({
+      nonce: Field(0),
+      actionsNonce: Field(0),
       startingPiecesState,
-      startingPiecesState,
+      currentPiecesState: startingPiecesState,
       startingArenaState,
-      startingArenaState,
-      playerPublicKey
-    );
+      currentArenaState: startingArenaState,
+      playerPublicKey,
+    });
   }
 
   hash(): Field {
@@ -136,15 +116,15 @@ export class PhaseState extends Struct({
     endingPiece.position = newPosition;
     proot = pieceWitness.calculateRoot(endingPiece.hash());
 
-    return new PhaseState(
-      this.nonce,
-      action.nonce,
-      this.startingPiecesState,
-      proot,
-      this.startingArenaState,
-      newAroot,
-      this.playerPublicKey
-    );
+    return new PhaseState({
+      nonce: this.nonce,
+      actionsNonce: action.nonce,
+      startingPiecesState: this.startingPiecesState,
+      currentPiecesState: proot,
+      startingArenaState: this.startingArenaState,
+      currentArenaState: newAroot,
+      playerPublicKey: this.playerPublicKey,
+    });
   }
 
   applyRangedAttackAction(
@@ -239,15 +219,15 @@ export class PhaseState extends Struct({
     targetPiece.condition.health = newHealth;
     const newPiecesRoot = targetPieceWitness.calculateRoot(targetPiece.hash());
 
-    return new PhaseState(
-      this.nonce,
-      action.nonce,
-      this.startingPiecesState,
-      newPiecesRoot,
-      this.startingArenaState,
-      this.currentArenaState,
-      this.playerPublicKey
-    );
+    return new PhaseState({
+      nonce: this.nonce,
+      actionsNonce: action.nonce,
+      startingPiecesState: this.startingPiecesState,
+      currentPiecesState: newPiecesRoot,
+      startingArenaState: this.startingArenaState,
+      currentArenaState: this.currentArenaState,
+      playerPublicKey: this.playerPublicKey,
+    });
   }
 
   applyMeleeAttackAction(
@@ -342,15 +322,15 @@ export class PhaseState extends Struct({
     targetPiece.condition.health = newHealth;
     const newPiecesRoot = targetPieceWitness.calculateRoot(targetPiece.hash());
 
-    return new PhaseState(
-      this.nonce,
-      action.nonce,
-      this.startingPiecesState,
-      newPiecesRoot,
-      this.startingArenaState,
-      this.currentArenaState,
-      this.playerPublicKey
-    );
+    return new PhaseState({
+      nonce: this.nonce,
+      actionsNonce: action.nonce,
+      startingPiecesState: this.startingPiecesState,
+      currentPiecesState: newPiecesRoot,
+      startingArenaState: this.startingArenaState,
+      currentArenaState: this.currentArenaState,
+      playerPublicKey: this.playerPublicKey,
+    });
   }
 
   toJSON() {

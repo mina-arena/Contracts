@@ -14,7 +14,15 @@ export class DecrytpedAttackRoll extends Struct({
   hit: Field,
   wound: Field,
   save: Field,
-}) {}
+}) {
+  toJSON() {
+    return {
+      hit: Number(this.hit.toString()),
+      wound: Number(this.wound.toString()),
+      save: Number(this.save.toString()),
+    };
+  }
+}
 
 export class EncrytpedAttackRoll extends Struct({
   publicKey: Group,
@@ -32,7 +40,7 @@ export class EncrytpedAttackRoll extends Struct({
     ); // test value for now
 
     signature
-      .verify(rngPublicKey, ciphertext)
+      .verify(rngPublicKey, [Field(3), Field(6), ...ciphertext])
       .assertTrue('Signature is not valid for provided ciphertext');
 
     return new EncrytpedAttackRoll({
@@ -44,8 +52,11 @@ export class EncrytpedAttackRoll extends Struct({
   }
 
   decryptRoll(privateKey: PrivateKey): DecrytpedAttackRoll {
+    // 3D6 is hardcoded into the verification
+    // A user may make a call to the dice roll service, e.g. a 3D20 to try to get a better roll
+    // It will fail verification because 3 and 6 are built into the signature
     this.signature
-      .verify(this.rngPublicKey, this.ciphertext)
+      .verify(this.rngPublicKey, [Field(3), Field(6), ...this.ciphertext])
       .assertTrue('Signature is not valid for provided ciphertext');
 
     const decrypted = Encryption.decrypt(
