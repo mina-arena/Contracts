@@ -4,7 +4,7 @@ import {
   UInt32,
   Encryption,
   Signature,
-  Circuit,
+  Provable,
 } from 'snarkyjs';
 
 import { PhaseState } from '../../../src/phase/PhaseState';
@@ -105,13 +105,13 @@ describe('PhaseState', () => {
       attack1 = new Action({
         nonce: Field(1),
         actionType: Field(2),
-        actionParams: targetPiece1.hash(),
+        actionParams: targetPiece1.id,
         piece: Field(1),
       });
       attack2 = new Action({
         nonce: Field(1),
         actionType: Field(2),
-        actionParams: targetPiece2.hash(),
+        actionParams: targetPiece2.id,
         piece: Field(1),
       });
     });
@@ -131,7 +131,7 @@ describe('PhaseState', () => {
       const piecesTreeBefore = piecesTree.clone();
       const attackDistance = MELEE_ATTACK_RANGE - 5;
 
-      Circuit.runAndCheck(() => {
+      Provable.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyMeleeAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
@@ -151,7 +151,7 @@ describe('PhaseState', () => {
           targetAfterAttack.hash()
         );
 
-        Circuit.asProver(() => {
+        Provable.asProver(() => {
           expect(newPhaseState.startingPiecesState.toString()).toBe(
             piecesTreeBefore.tree.getRoot().toString()
           );
@@ -177,7 +177,7 @@ describe('PhaseState', () => {
       const piecesTreeBefore = piecesTree.clone();
       const attackDistance = MELEE_ATTACK_RANGE - 5;
 
-      Circuit.runAndCheck(() => {
+      Provable.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyMeleeAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
@@ -197,7 +197,7 @@ describe('PhaseState', () => {
           targetAfterAttack.hash()
         );
 
-        Circuit.asProver(() => {
+        Provable.asProver(() => {
           expect(newPhaseState.startingPiecesState.toString()).toBe(
             piecesTreeBefore.tree.getRoot().toString()
           );
@@ -223,7 +223,7 @@ describe('PhaseState', () => {
       const piecesTreeBefore = piecesTree.clone();
       const attackDistance = MELEE_ATTACK_RANGE - 5;
 
-      Circuit.runAndCheck(() => {
+      Provable.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyMeleeAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
@@ -243,7 +243,7 @@ describe('PhaseState', () => {
           targetAfterAttack.hash()
         );
 
-        Circuit.asProver(() => {
+        Provable.asProver(() => {
           expect(newPhaseState.startingPiecesState.toString()).toBe(
             piecesTreeBefore.tree.getRoot().toString()
           );
@@ -269,7 +269,7 @@ describe('PhaseState', () => {
       const attackDistance = MELEE_ATTACK_RANGE + 5;
 
       expect(() => {
-        Circuit.runAndCheck(() => {
+        Provable.runAndCheck(() => {
           initialPhaseState.applyMeleeAttackAction(
             attack2,
             attack2.sign(player1PrivateKey),
@@ -332,7 +332,7 @@ describe('PhaseState', () => {
       const attackDistance = MELEE_ATTACK_RANGE - 5;
 
       expect(() => {
-        Circuit.runAndCheck(() => {
+        Provable.runAndCheck(() => {
           initialPhaseState.applyMeleeAttackAction(
             attack1,
             attack1.sign(player1PrivateKey),

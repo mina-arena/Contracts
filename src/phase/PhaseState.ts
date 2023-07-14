@@ -5,7 +5,7 @@ import {
   PublicKey,
   UInt32,
   PrivateKey,
-  Circuit,
+  Provable,
   Bool,
   Poseidon,
 } from 'snarkyjs';
@@ -172,13 +172,13 @@ export class PhaseState extends Struct({
       'Action type must be 1 (ranged attack)'
     ); // action is a "ranged attack" action
     action.actionParams.assertEquals(
-      targetPiece.hash(),
+      targetPiece.id,
       'The action target is different than the proved target piece'
     );
 
     const decrytpedRolls = attackRoll.decryptRoll(serverSecretKey);
     // roll for hit
-    const hit = Circuit.if(
+    const hit = Provable.if(
       decrytpedRolls.hit.greaterThanOrEqual(
         attackingPiece.condition.rangedHitRoll.value
       ),
@@ -187,7 +187,7 @@ export class PhaseState extends Struct({
     );
 
     // roll for wound
-    const wound = Circuit.if(
+    const wound = Provable.if(
       decrytpedRolls.wound.greaterThanOrEqual(
         attackingPiece.condition.rangedWoundRoll.value
       ),
@@ -196,7 +196,7 @@ export class PhaseState extends Struct({
     );
 
     // roll for save
-    const notSave = Circuit.if(
+    const notSave = Provable.if(
       decrytpedRolls.save.greaterThanOrEqual(
         targetPiece.condition.saveRoll.value
       ),
@@ -204,13 +204,13 @@ export class PhaseState extends Struct({
       Bool(true)
     );
 
-    let healthDiff = Circuit.if(
+    let healthDiff = Provable.if(
       Bool.and(Bool.and(hit, wound), notSave),
       attackingPiece.condition.rangedDamage,
       UInt32.from(0)
     );
 
-    const newHealth = Circuit.if(
+    const newHealth = Provable.if(
       healthDiff.greaterThanOrEqual(targetPiece.condition.health),
       UInt32.from(0),
       targetPiece.condition.health.sub(healthDiff)
@@ -275,13 +275,13 @@ export class PhaseState extends Struct({
       'Action type must be 2 (melee attack)'
     ); // action is a "ranged attack" action
     action.actionParams.assertEquals(
-      targetPiece.hash(),
+      targetPiece.id,
       'The action target is different than the proved target piece'
     );
 
     const decrytpedRolls = attackRoll.decryptRoll(serverSecretKey);
     // roll for hit
-    const hit = Circuit.if(
+    const hit = Provable.if(
       decrytpedRolls.hit.greaterThanOrEqual(
         attackingPiece.condition.meleeHitRoll.value
       ),
@@ -290,7 +290,7 @@ export class PhaseState extends Struct({
     );
 
     // roll for wound
-    const wound = Circuit.if(
+    const wound = Provable.if(
       decrytpedRolls.wound.greaterThanOrEqual(
         attackingPiece.condition.meleeWoundRoll.value
       ),
@@ -299,7 +299,7 @@ export class PhaseState extends Struct({
     );
 
     // roll for save
-    const notSave = Circuit.if(
+    const notSave = Provable.if(
       decrytpedRolls.save.greaterThanOrEqual(
         targetPiece.condition.saveRoll.value
       ),
@@ -307,13 +307,13 @@ export class PhaseState extends Struct({
       Bool(true)
     );
 
-    let healthDiff = Circuit.if(
+    let healthDiff = Provable.if(
       Bool.and(Bool.and(hit, wound), notSave),
       attackingPiece.condition.meleeDamage,
       UInt32.from(0)
     );
 
-    const newHealth = Circuit.if(
+    const newHealth = Provable.if(
       healthDiff.greaterThanOrEqual(targetPiece.condition.health),
       UInt32.from(0),
       targetPiece.condition.health.sub(healthDiff)
