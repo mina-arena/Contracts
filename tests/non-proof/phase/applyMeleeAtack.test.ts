@@ -105,13 +105,13 @@ describe('PhaseState', () => {
       attack1 = new Action({
         nonce: Field(1),
         actionType: Field(2),
-        actionParams: targetPiece1.hash(),
+        actionParams: targetPiece1.id,
         piece: Field(1),
       });
       attack2 = new Action({
         nonce: Field(1),
         actionType: Field(2),
-        actionParams: targetPiece2.hash(),
+        actionParams: targetPiece2.id,
         piece: Field(1),
       });
     });
