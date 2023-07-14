@@ -1,5 +1,5 @@
 import {
-  Circuit,
+  Provable,
   Encryption,
   Field,
   Group,
@@ -26,7 +26,7 @@ export class DecrytpedAttackRoll extends Struct({
 
 export class EncrytpedAttackRoll extends Struct({
   publicKey: Group,
-  ciphertext: Circuit.array(Field, 4),
+  ciphertext: Provable.Array(Field, 4),
   signature: Signature,
   rngPublicKey: PublicKey,
 }) {

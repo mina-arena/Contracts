@@ -4,7 +4,7 @@ import {
   UInt32,
   Encryption,
   Signature,
-  Circuit,
+  Provable,
 } from 'snarkyjs';
 
 import { PhaseState } from '../../../src/phase/PhaseState';
@@ -130,7 +130,7 @@ describe('PhaseState', () => {
       const piecesTreeBefore = piecesTree.clone();
       const attackDistance = 20;
 
-      Circuit.runAndCheck(() => {
+      Provable.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyRangedAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
@@ -150,7 +150,7 @@ describe('PhaseState', () => {
           targetAfterAttack.hash()
         );
 
-        Circuit.asProver(() => {
+        Provable.asProver(() => {
           expect(newPhaseState.startingPiecesState.toString()).toBe(
             piecesTreeBefore.tree.getRoot().toString()
           );
@@ -176,7 +176,7 @@ describe('PhaseState', () => {
       const piecesTreeBefore = piecesTree.clone();
       const attackDistance = 20;
 
-      Circuit.runAndCheck(() => {
+      Provable.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyRangedAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
@@ -196,7 +196,7 @@ describe('PhaseState', () => {
           targetAfterAttack.hash()
         );
 
-        Circuit.asProver(() => {
+        Provable.asProver(() => {
           expect(newPhaseState.startingPiecesState.toString()).toBe(
             piecesTreeBefore.tree.getRoot().toString()
           );
@@ -222,7 +222,7 @@ describe('PhaseState', () => {
       const piecesTreeBefore = piecesTree.clone();
       const attackDistance = 20;
 
-      Circuit.runAndCheck(() => {
+      Provable.runAndCheck(() => {
         const newPhaseState = initialPhaseState.applyRangedAttackAction(
           attack1,
           attack1.sign(player1PrivateKey),
@@ -242,7 +242,7 @@ describe('PhaseState', () => {
           targetAfterAttack.hash()
         );
 
-        Circuit.asProver(() => {
+        Provable.asProver(() => {
           expect(newPhaseState.startingPiecesState.toString()).toBe(
             piecesTreeBefore.tree.getRoot().toString()
           );
@@ -268,7 +268,7 @@ describe('PhaseState', () => {
       const attackDistance = 100;
 
       expect(() => {
-        Circuit.runAndCheck(() => {
+        Provable.runAndCheck(() => {
           initialPhaseState.applyRangedAttackAction(
             attack2,
             attack2.sign(player1PrivateKey),
@@ -327,7 +327,7 @@ describe('PhaseState', () => {
       const attackDistance = 20;
 
       expect(() => {
-        Circuit.runAndCheck(() => {
+        Provable.runAndCheck(() => {
           initialPhaseState.applyRangedAttackAction(
             attack1,
             attack1.sign(player1PrivateKey),

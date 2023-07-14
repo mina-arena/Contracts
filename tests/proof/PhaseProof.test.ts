@@ -2,7 +2,7 @@ import {
   PrivateKey,
   Field,
   UInt32,
-  Circuit,
+  Provable,
   Encryption,
   Signature,
 } from 'snarkyjs';
@@ -154,10 +154,10 @@ describe('PhaseProof', () => {
         playerPublicKey: initialPhaseState.playerPublicKey,
       });
 
-      Circuit.log(
+      Provable.log(
         `initial phase state: ${initialPhaseState.hash().toString()}`
       );
-      Circuit.log(`final phase state: ${finalPhaseState.hash().toString()}`);
+      Provable.log(`final phase state: ${finalPhaseState.hash().toString()}`);
 
       console.time('applyMoveProof');
       const afterMoveProof = await PhaseProgram.applyMove(
@@ -174,14 +174,14 @@ describe('PhaseProof', () => {
       );
       console.timeEnd('applyMoveProof');
 
-      Circuit.log('finished with proof');
-      Circuit.log(
+      Provable.log('finished with proof');
+      Provable.log(
         `Proof state: ${afterMoveProof.publicInput.hash().toString()}`
       );
 
       const didVerify = await afterMoveProof.verify();
 
-      Circuit.log('Verified Proof');
+      Provable.log('Verified Proof');
       expect(true); // did not throw on verify()
       console.timeEnd('applyMove');
     });
@@ -299,10 +299,10 @@ describe('PhaseProof', () => {
         playerPublicKey: initialPhaseState.playerPublicKey,
       });
 
-      Circuit.log(
+      Provable.log(
         `initial phase state: ${initialPhaseState.hash().toString()}`
       );
-      Circuit.log(`final phase state: ${finalPhaseState.hash().toString()}`);
+      Provable.log(`final phase state: ${finalPhaseState.hash().toString()}`);
       console.time('applyRangedAttackProof');
       const afterAttackProof = await PhaseProgram.applyRangedAttack(
         finalPhaseState,
@@ -317,14 +317,14 @@ describe('PhaseProof', () => {
         diceRolls,
         serverPrivateKey
       );
-      Circuit.log('finished with proof');
-      Circuit.log(
+      Provable.log('finished with proof');
+      Provable.log(
         `Proof state: ${afterAttackProof.publicInput.hash().toString()}`
       );
 
       const didVerify = await afterAttackProof.verify();
 
-      Circuit.log('Verified Proof');
+      Provable.log('Verified Proof');
       expect(true); // did not throw on verify()
       console.timeEnd('applyRangedAttack');
     });
@@ -442,10 +442,10 @@ describe('PhaseProof', () => {
         playerPublicKey: initialPhaseState.playerPublicKey,
       });
 
-      Circuit.log(
+      Provable.log(
         `initial phase state: ${initialPhaseState.hash().toString()}`
       );
-      Circuit.log(`final phase state: ${finalPhaseState.hash().toString()}`);
+      Provable.log(`final phase state: ${finalPhaseState.hash().toString()}`);
 
       console.time('applyMeleeAttackProof');
       const afterAttackProof = await PhaseProgram.applyMeleeAttack(
@@ -463,14 +463,14 @@ describe('PhaseProof', () => {
       );
       console.timeEnd('applyMeleeAttackProof');
 
-      Circuit.log('finished with proof');
-      Circuit.log(
+      Provable.log('finished with proof');
+      Provable.log(
         `Proof state: ${afterAttackProof.publicInput.hash().toString()}`
       );
 
       const didVerify = await afterAttackProof.verify();
 
-      Circuit.log('Verified Proof');
+      Provable.log('Verified Proof');
       expect(true); // did not throw on verify()
       console.timeEnd('applyMeleeAttack');
     });

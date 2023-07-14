@@ -1,4 +1,4 @@
-import { Field, Struct, UInt32, Poseidon, Circuit, Bool } from 'snarkyjs';
+import { Field, Struct, UInt32, Poseidon, Provable, Bool } from 'snarkyjs';
 
 export class Position extends Struct({
   x: UInt32,
@@ -32,12 +32,12 @@ export class Position extends Struct({
      * x, y in our positions are UInt32, but we need to allow negative numbers
      * so the intermediate _x, _y are raw Field values and we will cast the final return to UInt32
      */
-    const _x: Field = Circuit.if(
+    const _x: Field = Provable.if(
       this.x.greaterThanOrEqual(other.x),
       (() => this.x.value.sub(other.x.value))(),
       (() => other.x.value.sub(this.x.value))()
     );
-    const _y: Field = Circuit.if(
+    const _y: Field = Provable.if(
       this.y.greaterThanOrEqual(other.y),
       (() => this.y.value.sub(other.y.value))(),
       (() => other.y.value.sub(this.y.value))()
