@@ -1,12 +1,7 @@
-import { Field, UInt32, PrivateKey } from 'snarkyjs';
+import { Field, PrivateKey } from 'snarkyjs';
 
 import { GameState } from '../../../src/game/GameState';
-import { Action } from '../../../src/objects/Action';
-import { Position } from '../../../src/objects/Position';
-import { Piece } from '../../../src/objects/Piece';
-import { Unit } from '../../../src/objects/Unit';
 import { TurnState } from '../../../src/turn/TurnState';
-import { PhaseState } from '../../../src/phase/PhaseState';
 import {
   ARENA_HEIGHT_U32,
   ARENA_WIDTH,
@@ -23,23 +18,23 @@ describe('GameState', () => {
     player1PrivateKey = PrivateKey.random();
     player2PrivateKey = PrivateKey.random();
 
-    initialGameState = new GameState(
-      Field(0),
-      Field(0),
-      Field(1),
-      player1PrivateKey.toPublicKey(),
-      player2PrivateKey.toPublicKey(),
-      ARENA_HEIGHT_U32,
-      ARENA_WIDTH_U32,
-      Field(0)
-    );
+    initialGameState = new GameState({
+      piecesRoot: Field(0),
+      arenaRoot: Field(0),
+      playerTurn: Field(1),
+      player1PublicKey: player1PrivateKey.toPublicKey(),
+      player2PublicKey: player2PrivateKey.toPublicKey(),
+      arenaLength: ARENA_HEIGHT_U32,
+      arenaWidth: ARENA_WIDTH_U32,
+      turnsNonce: Field(0),
+    });
   });
   describe('toJSON', () => {
     it('initalizes and serializes input', async () => {
       const expectedPiecesRoot = Field(0).toString();
       const expectedArenaRoot = Field(0).toString();
-      const expectedPlayerTurn = 1;
-      const expectedTurnNonce = 0;
+      const expectedPlayerTurn = '1';
+      const expectedTurnNonce = '0';
 
       expect(initialGameState.toJSON()).toEqual({
         piecesRoot: expectedPiecesRoot,
@@ -47,10 +42,20 @@ describe('GameState', () => {
         playerTurn: expectedPlayerTurn,
         player1PublicKey: player1PrivateKey.toPublicKey().toBase58(),
         player2PublicKey: player2PrivateKey.toPublicKey().toBase58(),
-        arenaLength: ARENA_HEIGHT,
-        arenaWidth: ARENA_WIDTH,
+        arenaLength: String(ARENA_HEIGHT),
+        arenaWidth: String(ARENA_WIDTH),
         turnsNonce: expectedTurnNonce,
       });
+    });
+  });
+
+  describe('fromJSON', () => {
+    it('initalizes and serializes input', async () => {
+      const toJSON = initialGameState.toJSON();
+      const fromJSON = GameState.fromJSON(toJSON);
+      expect(fromJSON.hash().toString()).toEqual(
+        initialGameState.hash().toString()
+      );
     });
   });
 
@@ -68,10 +73,10 @@ describe('GameState', () => {
 
       const newTurnState = initialGameState.applyTurn(dummyTurn);
 
-      const expectedTurnNonce = 1;
+      const expectedTurnNonce = '1';
       const expectedPiecesRoot = Field(10).toString();
       const expectedArenaRoot = Field(20).toString();
-      const expectedPlayerTurn = 2;
+      const expectedPlayerTurn = '2';
 
       expect(newTurnState.toJSON()).toEqual({
         piecesRoot: expectedPiecesRoot,
@@ -79,8 +84,8 @@ describe('GameState', () => {
         playerTurn: expectedPlayerTurn,
         player1PublicKey: player1PrivateKey.toPublicKey().toBase58(),
         player2PublicKey: player2PrivateKey.toPublicKey().toBase58(),
-        arenaLength: ARENA_HEIGHT,
-        arenaWidth: ARENA_WIDTH,
+        arenaLength: String(ARENA_HEIGHT),
+        arenaWidth: String(ARENA_WIDTH),
         turnsNonce: expectedTurnNonce,
       });
     });

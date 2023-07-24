@@ -1,6 +1,17 @@
 import { Field, Struct, PublicKey, UInt32, Provable, Poseidon } from 'snarkyjs';
 import { TurnState } from '../turn/TurnState.js';
 
+export type GameStateJSON = {
+  piecesRoot: string;
+  arenaRoot: string;
+  playerTurn: string;
+  player1PublicKey: string;
+  player2PublicKey: string;
+  arenaLength: string;
+  arenaWidth: string;
+  turnsNonce: string;
+};
+
 class NextTurnTuple extends Struct({
   playerPublicKey: PublicKey,
   playerTurn: Field,
@@ -16,28 +27,19 @@ export class GameState extends Struct({
   arenaWidth: UInt32,
   turnsNonce: Field,
 }) {
-  constructor(
-    piecesRoot: Field,
-    arenaRoot: Field,
-    playerTurn: Field,
-    player1PublicKey: PublicKey,
-    player2PublicKey: PublicKey,
-    arenaLength: UInt32,
-    arenaWidth: UInt32,
-    turnsNonce: Field
-  ) {
-    playerTurn.assertGreaterThan(Field(0));
-    playerTurn.assertLessThan(Field(3));
-    super({
-      piecesRoot,
-      arenaRoot,
-      playerTurn,
-      player1PublicKey,
-      player2PublicKey,
-      arenaLength,
-      arenaWidth,
-      turnsNonce,
-    });
+  constructor(value: {
+    piecesRoot: Field;
+    arenaRoot: Field;
+    playerTurn: Field;
+    player1PublicKey: PublicKey;
+    player2PublicKey: PublicKey;
+    arenaLength: UInt32;
+    arenaWidth: UInt32;
+    turnsNonce: Field;
+  }) {
+    value.playerTurn.assertGreaterThan(Field(0));
+    value.playerTurn.assertLessThan(Field(3));
+    super(value);
   }
 
   hash(): Field {
@@ -77,28 +79,41 @@ export class GameState extends Struct({
     turnState.startingPiecesState.assertEquals(this.piecesRoot);
     turnState.startingArenaState.assertEquals(this.arenaRoot);
 
-    return new GameState(
-      turnState.currentPiecesState,
-      turnState.currentArenaState,
-      nextTurnTuple.playerTurn,
-      this.player1PublicKey,
-      this.player2PublicKey,
-      this.arenaLength,
-      this.arenaWidth,
-      turnState.nonce
-    );
+    return new GameState({
+      piecesRoot: turnState.currentPiecesState,
+      arenaRoot: turnState.currentArenaState,
+      playerTurn: nextTurnTuple.playerTurn,
+      player1PublicKey: this.player1PublicKey,
+      player2PublicKey: this.player2PublicKey,
+      arenaLength: this.arenaLength,
+      arenaWidth: this.arenaWidth,
+      turnsNonce: turnState.nonce,
+    });
   }
 
-  toJSON() {
+  toJSON(): GameStateJSON {
     return {
       piecesRoot: this.piecesRoot.toString(),
       arenaRoot: this.arenaRoot.toString(),
-      playerTurn: Number(this.playerTurn.toString()),
+      playerTurn: this.playerTurn.toString(),
       player1PublicKey: this.player1PublicKey.toBase58(),
       player2PublicKey: this.player2PublicKey.toBase58(),
-      arenaLength: Number(this.arenaLength.toString()),
-      arenaWidth: Number(this.arenaWidth.toString()),
-      turnsNonce: Number(this.turnsNonce.toString()),
+      arenaLength: this.arenaLength.toString(),
+      arenaWidth: this.arenaWidth.toString(),
+      turnsNonce: this.turnsNonce.toString(),
     };
+  }
+
+  static fromJSON(j: GameStateJSON): GameState {
+    return new GameState({
+      piecesRoot: Field(j.piecesRoot),
+      arenaRoot: Field(j.arenaRoot),
+      playerTurn: Field(j.playerTurn),
+      player1PublicKey: PublicKey.fromBase58(j.player1PublicKey),
+      player2PublicKey: PublicKey.fromBase58(j.player2PublicKey),
+      arenaLength: UInt32.from(j.arenaLength),
+      arenaWidth: UInt32.from(j.arenaWidth),
+      turnsNonce: Field(j.turnsNonce),
+    });
   }
 }

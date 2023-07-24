@@ -55,16 +55,16 @@ describe('PhaseState', () => {
       arenaTree.set(100, 20, Field(1));
       arenaTree.set(150, 15, Field(1));
       arenaTree.set(125, 750, Field(1));
-      gameState = new GameState(
-        piecesTree.tree.getRoot(),
-        arenaTree.tree.getRoot(),
-        Field(1),
-        player1PrivateKey.toPublicKey(),
-        player2PrivateKey.toPublicKey(),
-        ARENA_HEIGHT_U32,
-        ARENA_WIDTH_U32,
-        Field(0)
-      );
+      gameState = new GameState({
+        piecesRoot: piecesTree.tree.getRoot(),
+        arenaRoot: arenaTree.tree.getRoot(),
+        playerTurn: Field(1),
+        player1PublicKey: player1PrivateKey.toPublicKey(),
+        player2PublicKey: player2PrivateKey.toPublicKey(),
+        arenaLength: ARENA_HEIGHT_U32,
+        arenaWidth: ARENA_WIDTH_U32,
+        turnsNonce: Field(0),
+      });
       initialPhaseState = new PhaseState({
         nonce: Field(0),
         actionsNonce: Field(0),
