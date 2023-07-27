@@ -2,6 +2,16 @@ import { Field, Struct, PublicKey, Poseidon } from 'snarkyjs';
 
 import { PhaseState } from '../phase/PhaseState.js';
 
+export type TurnStateJSON = {
+  nonce: string;
+  phaseNonce: string;
+  startingPiecesState: string;
+  currentPiecesState: string;
+  startingArenaState: string;
+  currentArenaState: string;
+  playerPublicKey: string;
+};
+
 export class TurnState extends Struct({
   nonce: Field, // to order this turn relative to others in the game
   phaseNonce: Field, // nonce of phases processed so far
@@ -11,24 +21,16 @@ export class TurnState extends Struct({
   currentArenaState: Field, // Arena state after the phases applied in this turn
   playerPublicKey: PublicKey, // the player this turn is for
 }) {
-  constructor(
-    nonce: Field,
-    phaseNonce: Field,
-    startingPiecesState: Field,
-    currentPiecesState: Field,
-    startingArenaState: Field,
-    currentArenaState: Field,
-    playerPublicKey: PublicKey
-  ) {
-    super({
-      nonce,
-      phaseNonce,
-      startingPiecesState,
-      currentPiecesState,
-      startingArenaState,
-      currentArenaState,
-      playerPublicKey,
-    });
+  constructor(value: {
+    nonce: Field;
+    phaseNonce: Field;
+    startingPiecesState: Field;
+    currentPiecesState: Field;
+    startingArenaState: Field;
+    currentArenaState: Field;
+    playerPublicKey: PublicKey;
+  }) {
+    super(value);
   }
 
   hash(): Field {
@@ -54,26 +56,38 @@ export class TurnState extends Struct({
     phaseState.startingPiecesState.assertEquals(this.currentPiecesState);
     phaseState.startingArenaState.assertEquals(this.currentArenaState);
 
-    return new TurnState(
-      this.nonce,
-      phaseState.nonce,
-      this.startingPiecesState,
-      phaseState.currentPiecesState,
-      this.startingArenaState,
-      phaseState.currentArenaState,
-      this.playerPublicKey
-    );
+    return new TurnState({
+      nonce: this.nonce,
+      phaseNonce: phaseState.nonce,
+      startingPiecesState: this.startingPiecesState,
+      currentPiecesState: phaseState.currentPiecesState,
+      startingArenaState: this.startingArenaState,
+      currentArenaState: phaseState.currentArenaState,
+      playerPublicKey: this.playerPublicKey,
+    });
   }
 
-  toJSON() {
+  toJSON(): TurnStateJSON {
     return {
-      nonce: Number(this.nonce.toString()),
-      phaseNonce: Number(this.phaseNonce.toString()),
+      nonce: this.nonce.toString(),
+      phaseNonce: this.phaseNonce.toString(),
       startingPiecesState: this.startingPiecesState.toString(),
       currentPiecesState: this.currentPiecesState.toString(),
       startingArenaState: this.startingArenaState.toString(),
       currentArenaState: this.currentArenaState.toString(),
       playerPublicKey: this.playerPublicKey.toBase58(),
     };
+  }
+
+  static fromJSON(j: TurnStateJSON): TurnState {
+    return new TurnState({
+      nonce: Field(j.nonce),
+      phaseNonce: Field(j.phaseNonce),
+      startingPiecesState: Field(j.startingPiecesState),
+      currentPiecesState: Field(j.currentPiecesState),
+      startingArenaState: Field(j.startingArenaState),
+      currentArenaState: Field(j.currentArenaState),
+      playerPublicKey: PublicKey.fromBase58(j.playerPublicKey),
+    });
   }
 }

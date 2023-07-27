@@ -9,21 +9,21 @@ describe('TurnState', () => {
   beforeEach(async () => {
     player1PrivateKey = PrivateKey.random();
 
-    initialTurnState = new TurnState(
-      Field(0),
-      Field(0),
-      Field(0),
-      Field(0),
-      Field(0),
-      Field(0),
-      player1PrivateKey.toPublicKey()
-    );
+    initialTurnState = new TurnState({
+      nonce: Field(0),
+      phaseNonce: Field(0),
+      startingPiecesState: Field(0),
+      currentPiecesState: Field(0),
+      startingArenaState: Field(0),
+      currentArenaState: Field(0),
+      playerPublicKey: player1PrivateKey.toPublicKey(),
+    });
   });
 
   describe('init', () => {
     it('initalizes and serializes input', async () => {
-      const expectedNonce = 0;
-      const expectedPhaseNonce = 0;
+      const expectedNonce = '0';
+      const expectedPhaseNonce = '0';
       const expectedPiecesRoot = Field(0).toString();
       const expectedArenaRoot = Field(0).toString();
       const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();
@@ -37,6 +37,16 @@ describe('TurnState', () => {
         currentArenaState: expectedArenaRoot,
         playerPublicKey: expectedPlayer,
       });
+    });
+  });
+
+  describe('fromJSON', () => {
+    it('initalizes and serializes input', async () => {
+      const toJSON = initialTurnState.toJSON();
+      const fromJSON = TurnState.fromJSON(toJSON);
+      expect(fromJSON.hash().toString()).toEqual(
+        initialTurnState.hash().toString()
+      );
     });
   });
 
@@ -54,8 +64,8 @@ describe('TurnState', () => {
 
       const newTurnState = initialTurnState.applyPhase(dummyPhase);
 
-      const expectedNonce = 0;
-      const expectedPhaseNonce = 1;
+      const expectedNonce = '0';
+      const expectedPhaseNonce = '1';
       const expectedPiecesRoot = Field(0).toString();
       const expectedArenaRoot = Field(0).toString();
       const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();

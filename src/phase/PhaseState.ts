@@ -18,6 +18,16 @@ import { PiecesMerkleWitness } from '../objects/PiecesMerkleTree.js';
 import { EncrytpedAttackRoll } from '../objects/AttackDiceRolls.js';
 import { MELEE_ATTACK_RANGE_U32 } from '../gameplay_constants.js';
 
+export type PhaseStateJSON = {
+  nonce: string;
+  actionsNonce: string;
+  startingPiecesState: string;
+  currentPiecesState: string;
+  startingArenaState: string;
+  currentArenaState: string;
+  playerPublicKey: string;
+};
+
 export class PhaseState extends Struct({
   nonce: Field,
   actionsNonce: Field, // nonce of actions processed so far
@@ -333,15 +343,27 @@ export class PhaseState extends Struct({
     });
   }
 
-  toJSON() {
+  toJSON(): PhaseStateJSON {
     return {
-      nonce: Number(this.nonce.toString()),
-      actionsNonce: Number(this.actionsNonce.toString()),
+      nonce: this.nonce.toString(),
+      actionsNonce: this.actionsNonce.toString(),
       startingPiecesState: this.startingPiecesState.toString(),
       currentPiecesState: this.currentPiecesState.toString(),
       startingArenaState: this.startingArenaState.toString(),
       currentArenaState: this.currentArenaState.toString(),
       playerPublicKey: this.playerPublicKey.toBase58(),
     };
+  }
+
+  static fromJSON(j: PhaseStateJSON): PhaseState {
+    return new PhaseState({
+      nonce: Field(j.nonce),
+      actionsNonce: Field(j.actionsNonce),
+      startingPiecesState: Field(j.startingPiecesState),
+      currentPiecesState: Field(j.currentPiecesState),
+      startingArenaState: Field(j.startingArenaState),
+      currentArenaState: Field(j.currentArenaState),
+      playerPublicKey: PublicKey.fromBase58(j.playerPublicKey),
+    });
   }
 }

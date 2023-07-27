@@ -77,8 +77,8 @@ describe('PhaseState', () => {
     });
 
     it('initalizes and serializes input', async () => {
-      const nonce = 0;
-      const expectedActionsNonce = 0;
+      const nonce = '0';
+      const expectedActionsNonce = '0';
       const expectedPiecesRoot = gameState.piecesRoot.toString();
       const expectedArenaRoot = gameState.arenaRoot.toString();
       const expectedPlayer = player1PrivateKey.toPublicKey().toBase58();
@@ -91,6 +91,16 @@ describe('PhaseState', () => {
         startingArenaState: expectedArenaRoot,
         currentArenaState: expectedArenaRoot,
         playerPublicKey: expectedPlayer,
+      });
+    });
+
+    describe('fromJSON', () => {
+      it('initalizes and serializes input', async () => {
+        const toJSON = initialPhaseState.toJSON();
+        const fromJSON = PhaseState.fromJSON(toJSON);
+        expect(fromJSON.hash().toString()).toEqual(
+          initialPhaseState.hash().toString()
+        );
       });
     });
   });

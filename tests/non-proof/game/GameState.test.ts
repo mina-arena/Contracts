@@ -61,15 +61,15 @@ describe('GameState', () => {
 
   describe('applyTurn', () => {
     it('updates game state', async () => {
-      const dummyTurn = new TurnState(
-        Field(1),
-        Field(3),
-        Field(0),
-        Field(10),
-        Field(0),
-        Field(20),
-        player1PrivateKey.toPublicKey()
-      );
+      const dummyTurn = new TurnState({
+        nonce: Field(1),
+        phaseNonce: Field(3),
+        startingPiecesState: Field(0),
+        currentPiecesState: Field(10),
+        startingArenaState: Field(0),
+        currentArenaState: Field(20),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
       const newTurnState = initialGameState.applyTurn(dummyTurn);
 
@@ -91,15 +91,15 @@ describe('GameState', () => {
     });
 
     it('rejects a phase with nonce too small', async () => {
-      const dummyTurn = new TurnState(
-        Field(0), // nonce should be >= 1
-        Field(3),
-        Field(0),
-        Field(10),
-        Field(0),
-        Field(20),
-        player1PrivateKey.toPublicKey()
-      );
+      const dummyTurn = new TurnState({
+        nonce: Field(0), // nonce should be >= 1
+        phaseNonce: Field(3),
+        startingPiecesState: Field(0),
+        currentPiecesState: Field(10),
+        startingArenaState: Field(0),
+        currentArenaState: Field(20),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
 
       expect(() => {
         initialGameState.applyTurn(dummyTurn);
@@ -107,16 +107,15 @@ describe('GameState', () => {
     });
 
     it('rejects a phase where the starting state does not match ', async () => {
-      const dummyTurn = new TurnState(
-        Field(1),
-        Field(3),
-        Field(1), // starting state should be 0
-        Field(10),
-        Field(2),
-        Field(20),
-        player1PrivateKey.toPublicKey()
-      );
-
+      const dummyTurn = new TurnState({
+        nonce: Field(1),
+        phaseNonce: Field(3),
+        startingPiecesState: Field(1), // starting state should be 0
+        currentPiecesState: Field(10),
+        startingArenaState: Field(2),
+        currentArenaState: Field(20),
+        playerPublicKey: player1PrivateKey.toPublicKey(),
+      });
       expect(() => {
         initialGameState.applyTurn(dummyTurn);
       }).toThrow();
