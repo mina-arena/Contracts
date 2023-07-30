@@ -220,13 +220,13 @@ export class PhaseState extends Struct({
       UInt32.from(0)
     );
 
-    const newHealth = Provable.if(
+    healthDiff = Provable.if(
       healthDiff.greaterThanOrEqual(targetPiece.condition.health),
-      UInt32.from(0),
-      targetPiece.condition.health.sub(healthDiff)
+      targetPiece.condition.health,
+      healthDiff
     );
 
-    targetPiece.condition.health = newHealth;
+    targetPiece.condition.health = targetPiece.condition.health.sub(healthDiff);
     const newPiecesRoot = targetPieceWitness.calculateRoot(targetPiece.hash());
 
     return new PhaseState({
