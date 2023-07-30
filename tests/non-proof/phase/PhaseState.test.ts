@@ -1,4 +1,4 @@
-import { PrivateKey, Field, UInt32 } from 'snarkyjs';
+import { PrivateKey, Field } from 'snarkyjs';
 
 import { PhaseState } from '../../../src/phase/PhaseState';
 import { GameState } from '../../../src/game/GameState';

@@ -1,7 +1,6 @@
 import { Field, MerkleTree, MerkleWitness } from 'snarkyjs';
 
-const MAX_UNITS_PER_SQUAD = 8; // 16 total units
-const TREE_HEIGHT = 5; // 2 ^ 4 = 16
+const TREE_HEIGHT = 6; // 2 ^ 5 = 32
 
 export class PiecesMerkleWitness extends MerkleWitness(TREE_HEIGHT) {}
 
