@@ -1,6 +1,6 @@
 {
   "name": "mina-arena-contracts",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Snarky JS components for Mina Arena",
   "author": "45930",
   "license": "Apache-2.0",
