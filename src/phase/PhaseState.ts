@@ -31,11 +31,11 @@ export type PhaseStateJSON = {
 export class PhaseState extends Struct({
   nonce: Field,
   actionsNonce: Field, // nonce of actions processed so far
-  startingPiecesState: Field, // Pieces state before this turn
-  currentPiecesState: Field, // Pieces state after the actions applied in this turn
-  startingArenaState: Field, // Arena state before this turn
-  currentArenaState: Field, // Arena state after the actions applied in this turn
-  playerPublicKey: PublicKey, // the player this turn is for
+  startingPiecesState: Field, // Pieces state before this phase
+  currentPiecesState: Field, // Pieces state after the actions applied in this phase
+  startingArenaState: Field, // Arena state before this phase
+  currentArenaState: Field, // Arena state after the actions applied in this phase
+  playerPublicKey: PublicKey, // the player this phase is for
 }) {
   static init(
     startingPiecesState: Field,

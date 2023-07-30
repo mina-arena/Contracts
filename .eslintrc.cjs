@@ -15,6 +15,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
   },
+  ignorePatterns: ['/assets/**/**', '*.md'],
   plugins: ['@typescript-eslint', 'snarkyjs'],
   rules: {
     'no-constant-condition': 'off',
